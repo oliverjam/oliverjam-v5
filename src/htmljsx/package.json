@@ -1,0 +1,7 @@
+{
+	"name": "htmljsx",
+	"exports": {
+		"./jsx-runtime": "./jsx-runtime.ts",
+		"./jsx-dev-runtime": "./jsx-runtime.ts"
+	}
+}
