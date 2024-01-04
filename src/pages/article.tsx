@@ -4,10 +4,8 @@ import { Root } from "../root.tsx";
 
 export function Article(slug: string) {
 	let entry = model.articles.read(slug);
-	console.log(slug);
-	console.log(entry);
 	if (entry === null) throw missing();
-	let { title, date, time, intro, content: body } = entry;
+	let { title, date, time, intro, content: body, tags } = entry;
 	return (
 		<Root title={title}>
 			<header>
@@ -15,6 +13,13 @@ export function Article(slug: string) {
 				<p class="dt-published">{new Date(date).toLocaleDateString()}</p>
 				<p>{(time / 60).toFixed(1)} minute read</p>
 				<h1 class="p-name">{title}</h1>
+				<div class="flex gap-1">
+					{tags.map((t) => (
+						<a class="p-category" href={`/tags/${t.slug}`}>
+							#{t.slug}
+						</a>
+					))}
+				</div>
 			</header>
 			<p>{intro}</p>
 			{body}

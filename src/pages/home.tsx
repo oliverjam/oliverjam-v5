@@ -19,6 +19,13 @@ export function Home() {
 						)}
 						{e.kind === "note" && <a class="u-url dt-published">{e.date}</a>}
 						<p class="e-summary">{e.intro}</p>
+						<div class="flex gap-1">
+							{e.tags.map((t) => (
+								<a class="p-category" href={`/tags/${t.slug}`}>
+									#{t.slug}
+								</a>
+							))}
+						</div>
 					</li>
 				))}
 			</ul>

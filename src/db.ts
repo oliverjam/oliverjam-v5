@@ -2,7 +2,9 @@ import { Database } from "bun:sqlite";
 
 let db = new Database("oliverjam.db");
 
-db.run(/*sql*/ `
+let sql = String.raw;
+
+db.run(sql`
   create table if not exists articles (
     slug text primary key,
     title text not null,
@@ -15,7 +17,7 @@ db.run(/*sql*/ `
     created text default current_timestamp
   ) strict;
 `);
-db.run(/*sql*/ `
+db.run(sql`
   create table if not exists notes (
     slug text primary key,
     date text not null,
@@ -25,18 +27,23 @@ db.run(/*sql*/ `
     created text default current_timestamp
   ) strict;
 `);
-db.run(
-  /*sql*`
+db.run(sql`
   create table if not exists tags (slug text primary key) strict
 `);
-db.run(/*sql*/ `
-  create table if not exists posts_tags (
-    post_slug text references posts(slug),
+db.run(sql`
+  create table if not exists articles_tags (
+    article_slug text references articles(slug),
     tag_slug text references tags(slug),
-    primary key (post_slug, tag_slug)
-  )
-`,
-);
+    primary key (article_slug, tag_slug)
+  ) strict
+`);
+db.run(sql`
+  create table if not exists notes_tags (
+    note_slug text references notes(slug),
+    tag_slug text references tags(slug),
+    primary key (note_slug, tag_slug)
+  ) strict
+`);
 
 type Article = {
   slug: string;
@@ -46,21 +53,31 @@ type Article = {
   intro: string;
   content: string;
   draft: 0 | 1;
+  tags: Array<Tag>;
 };
 
 class Articles {
-  #list = db.query<Article, []>(/*sql*/ `
-    select slug, title, intro, time, date from articles
+  #list = db.query<Article, []>(sql`
+    select slug, title, intro, time from articles
     where draft = 0
     order by date desc
   `);
-  list = () => this.#list.all();
-  #read = db.query<Article, [string]>(/*sql*/ `
+  list = () =>
+    this.#list.all().map((a) => {
+      a.tags = model.tags.article(a.slug);
+      return a;
+    });
+
+  #read = db.query<Article, [string]>(sql`
     select slug, title, intro, time, date, content from articles
     where slug = ?
     limit 1
   `);
-  read = (slug: string) => this.#read.get(slug);
+  read = (slug: string) => {
+    let article = this.#read.get(slug);
+    if (article) article.tags = model.tags.article(slug);
+    return article;
+  };
 }
 
 type Note = {
@@ -68,45 +85,83 @@ type Note = {
   date: string;
   content: string;
   draft: 0 | 1;
+  tags: Array<Tag>;
 };
 
 class Notes {
-  #list = db.query<Note, []>(/*sql*/ `
+  #list = db.query<Note, []>(sql`
     select slug, date, content from notes
     where draft = 0
     order by date desc
   `);
-  list = () => this.#list.all();
-  #read = db.query<Note, [string]>(/*sql*/ `
+  list = () =>
+    this.#list.all().map((n) => {
+      n.tags = model.tags.note(n.slug);
+      return n;
+    });
+
+  #read = db.query<Note, [string]>(sql`
     select slug, date, content from notes
     where slug = ?
     limit 1
   `);
-  read = (slug: string) => this.#read.get(slug);
+  read = (slug: string) => {
+    let note = this.#read.get(slug);
+    if (note) note.tags = model.tags.note(slug);
+    return note;
+  };
 }
 
-type Post = {
+type Tag = {
+  slug: string;
+};
+
+class Tags {
+  #list = db.query<Tag, []>(sql`
+    select slug from tags
+  `);
+  list = () => this.#list.all();
+
+  #article = db.query<Tag, [string]>(sql`
+    select tag_slug as slug from articles_tags where article_slug = ?
+  `);
+  article = (slug: string) => this.#article.all(slug);
+
+  #note = db.query<Tag, [string]>(sql`
+    select tag_slug as slug from notes_tags where note_slug = ?
+  `);
+  note = (slug: string) => this.#note.all(slug);
+}
+
+type Entry = {
   slug: string;
   title: string | null;
   intro: string;
   date: string;
   kind: "article" | "note";
+  tags: Array<Tag>;
 };
 
 class All {
-  #list = db.query<Post, []>(/*sql*/ `
-    select slug, title, intro, date, 'article' as kind, draft  from articles
-      where draft = 0
+  #list = db.query<Entry, []>(sql`
+    select slug, title, intro, date, 'article' as kind from articles
+    where draft = 0
     union
-    select slug, null as title, content as intro, date, 'note' as kind, draft from notes
-      where draft = 0
+    select slug, null as title, content as intro, date, 'note' as kind from notes
+    where draft = 0
     order by date desc
   `);
-  list = () => this.#list.all();
+  list = () =>
+    this.#list.all().map((e) => {
+      if (e.kind === "article") e.tags = model.tags.article(e.slug);
+      if (e.kind === "note") e.tags = model.tags.note(e.slug);
+      return e;
+    });
 }
 
 export let model = {
   articles: new Articles(),
   notes: new Notes(),
   all: new All(),
+  tags: new Tags(),
 };
