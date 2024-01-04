@@ -5,7 +5,8 @@ import { Root } from "../root.tsx";
 export function Article(slug: string) {
 	let entry = model.articles.read(slug);
 	if (entry === null) throw missing();
-	let { title, date, time, intro, content: body, tags } = entry;
+	let { title, date, time, intro, content: body } = entry;
+	let tags = model.tags.article(slug);
 	return (
 		<Root title={title}>
 			<header>

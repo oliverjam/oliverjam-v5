@@ -53,7 +53,6 @@ type Article = {
   intro: string;
   content: string;
   draft: 0 | 1;
-  tags: Array<Tag>;
 };
 
 class Articles {
@@ -62,22 +61,14 @@ class Articles {
     where draft = 0
     order by date desc
   `);
-  list = () =>
-    this.#list.all().map((a) => {
-      a.tags = model.tags.article(a.slug);
-      return a;
-    });
+  list = () => this.#list.all();
 
   #read = db.query<Article, [string]>(sql`
     select slug, title, intro, time, date, content from articles
     where slug = ?
     limit 1
   `);
-  read = (slug: string) => {
-    let article = this.#read.get(slug);
-    if (article) article.tags = model.tags.article(slug);
-    return article;
-  };
+  read = (slug: string) => this.#read.get(slug);
 }
 
 type Note = {
@@ -85,7 +76,6 @@ type Note = {
   date: string;
   content: string;
   draft: 0 | 1;
-  tags: Array<Tag>;
 };
 
 class Notes {
@@ -94,22 +84,14 @@ class Notes {
     where draft = 0
     order by date desc
   `);
-  list = () =>
-    this.#list.all().map((n) => {
-      n.tags = model.tags.note(n.slug);
-      return n;
-    });
+  list = () => this.#list.all();
 
   #read = db.query<Note, [string]>(sql`
     select slug, date, content from notes
     where slug = ?
     limit 1
   `);
-  read = (slug: string) => {
-    let note = this.#read.get(slug);
-    if (note) note.tags = model.tags.note(slug);
-    return note;
-  };
+  read = (slug: string) => this.#read.get(slug);
 }
 
 type Tag = {
@@ -151,12 +133,7 @@ class All {
     where draft = 0
     order by date desc
   `);
-  list = () =>
-    this.#list.all().map((e) => {
-      if (e.kind === "article") e.tags = model.tags.article(e.slug);
-      if (e.kind === "note") e.tags = model.tags.note(e.slug);
-      return e;
-    });
+  list = () => this.#list.all();
 }
 
 export let model = {
