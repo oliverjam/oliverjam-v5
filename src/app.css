@@ -17,3 +17,69 @@
 		text-decoration-line: revert;
 	}
 }
+
+@layer components {
+	pre {
+		--code-1: hsl(160, 10%, 42%);
+		--code-2: hsl(168, 47%, 34%);
+		--code-3: hsl(172, 50%, 24%);
+		--code-4: hsl(178, 40%, 14%);
+		padding: theme(space.4);
+		background-color: hsl(184, 30%, 10%);
+		font-size: theme(fontSize[sm]);
+		line-height: 1.4;
+		font-family: theme(fontFamily[mono]);
+		overflow: auto;
+		scrollbar-color: hsl(164, 40%, 50%) hsl(184, 30%, 10%);
+		scrollbar-width: thin;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		pre {
+			--code-1: hsl(168, 38%, 42%);
+			--code-2: hsl(164, 40%, 50%);
+			--code-3: hsl(156, 50%, 75%);
+			--code-4: hsl(148, 62%, 87%);
+		}
+	}
+
+	pre::-webkit-scrollbar {
+		height: var(--space-1);
+	}
+
+	pre::-webkit-scrollbar-thumb {
+		background: hsl(164, 40%, 50%);
+		border-radius: 1rem;
+	}
+
+	pre::-webkit-scrollbar-track {
+		background: hsl(184, 30%, 10%);
+	}
+
+	pre,
+	.token {
+		font-weight: normal;
+		color: var(--code-3);
+	}
+
+	.token:is(.punctuation, .comment) {
+		color: var(--code-1);
+	}
+
+	.token:is(.keyword, .unit) {
+		color: var(--code-2);
+	}
+
+	.token:is(.key, .property, .attr-value) {
+		color: var(--code-4);
+	}
+
+	.token:is(.comment) {
+		font-style: italic;
+	}
+
+	.token:is(.function, .tag, .selector) {
+		color: var(--code-2);
+		font-weight: bold;
+	}
+}

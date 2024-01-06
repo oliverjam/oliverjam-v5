@@ -1,5 +1,7 @@
 import { parse } from "yaml";
 import { marked } from "marked";
+import Prism from "prismjs";
+import loadLanguages from "prismjs/components/index.js";
 
 marked.use({
   renderer: {
@@ -11,22 +13,11 @@ marked.use({
     },
     code(code, info = "") {
       let [lang, file] = info.split(" ");
-      // let grammar = lang && prism.languages[lang];
-      // let highlighted = grammar ? prism.highlight(code, grammar, lang) : code;
-      let highlighted = code;
-      return `<div class="Code">
-      ${
-        file
-          ? `<p class="CodeFile">
-        <svg width="12" height="12" aria-hidden="true">
-          <use href="/public/sprite.svg#file" />
-        </svg>
-        ${file}
-      </p>`
-          : ""
-      }
-      <pre><code class="CodeSyntax">${highlighted}</code></pre>
-    </div>`;
+
+      if (lang && !Prism.languages[lang]) loadLanguages([lang]);
+      let grammar = lang && Prism.languages[lang];
+      let highlighted = grammar ? Prism.highlight(code, grammar, lang) : code;
+      return `<pre><code>${highlighted}</code></pre>`;
     },
     image(_src, _title, _alt) {
       let motion = _src.endsWith(".mp4");
