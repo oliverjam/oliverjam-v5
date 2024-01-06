@@ -1,6 +1,7 @@
 import { missing } from "../app.tsx";
 import { model } from "../db.ts";
-import { Root } from "../root.tsx";
+import { Icon, ReadableDate, Row } from "../ui.tsx";
+import { Root } from "./root.tsx";
 
 export function Article(slug: string) {
 	let entry = model.articles.read(slug);
@@ -8,22 +9,34 @@ export function Article(slug: string) {
 	let { title, date, time, intro, content } = entry;
 	let tags = model.tags.article(slug);
 	return (
-		<Root title={title}>
-			<header>
-				<p class="p-kind">Article</p>
-				<p class="dt-published">{new Date(date).toLocaleDateString()}</p>
-				<p>{(time / 60).toFixed(1)} minute read</p>
-				<h1 class="p-name">{title}</h1>
-				<div class="flex gap-1">
+		<Root title={title} class="max-w-2xl p-8 space-y-4">
+			<header class="space-y-3 text-sm">
+				<Row class="gap-4">
+					<Row>
+						<Icon name="article" />
+						<span class="p-kind sr-only">Article</span>
+						<ReadableDate class="dt-published">{date}</ReadableDate>
+					</Row>
+					<Row>
+						<Icon name="clock" />
+						<p>{(time / 60).toFixed(1)} minute read</p>
+					</Row>
+				</Row>
+				<h1 class="p-name leading-none text-4xl font-serif text-balance">
+					{title}
+				</h1>
+				<Row>
 					{tags.map((t) => (
 						<a class="p-category" href={`/tags/${t.slug}`}>
 							#{t.slug}
 						</a>
 					))}
-				</div>
+				</Row>
 			</header>
-			<p>{intro}</p>
-			{content}
+			<div class="space-y-4 leading-relaxed font-serif">
+				<p class="text-xl">{intro}</p>
+				{content}
+			</div>
 		</Root>
 	);
 }

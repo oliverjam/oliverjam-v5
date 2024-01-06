@@ -1,4 +1,4 @@
-import { Root } from "../root.tsx";
+import { Root } from "./root.tsx";
 
 export function Missing() {
 	return (

@@ -19,7 +19,7 @@ const VOIDS = new Set([
 type Child = unknown;
 type Children = Child | Array<Child>;
 type Props = Record<string, unknown> & { children?: Children };
-type Component = (props?: Props) => string;
+type Component = (props?: Props) => Children;
 type Type = string | Component;
 
 function jsx(tag: Type, props: Props) {

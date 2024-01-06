@@ -3,6 +3,10 @@ import type { Config } from "tailwindcss";
 export default {
   content: ["src/**/*.tsx"],
   theme: {
+    fontFamily: {
+      sans: ["system-ui", "sans-serif"],
+      serif: ["Spectral", "ui-serif", "Georgia", "serif"],
+    },
     extend: {},
   },
   plugins: [],

@@ -1,8 +1,8 @@
 import { missing } from "../app.tsx";
 import { model } from "../db.ts";
-import { Root } from "../root.tsx";
+import { Root } from "./root.tsx";
 
-export function Article(slug: string) {
+export function Note(slug: string) {
 	let entry = model.notes.read(slug);
 	if (entry === null) throw missing();
 	let { date, content } = entry;

@@ -1,5 +1,5 @@
 import { model } from "../db.ts";
-import { Root } from "../root.tsx";
+import { Root } from "./root.tsx";
 
 export function Notes() {
 	return (
@@ -11,7 +11,7 @@ export function Notes() {
 					return (
 						<li>
 							<p class="p-kind">Note</p>
-							<a class="dt-published u-uid u-url" href={"/note/" + e.slug}>
+							<a class="dt-published u-uid u-url" href={e.slug}>
 								{e.date}
 							</a>
 							<div class="e-content">{e.content}</div>
