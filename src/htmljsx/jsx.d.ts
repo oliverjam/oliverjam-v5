@@ -423,9 +423,11 @@ declare namespace JSX {
     src?: undefined | string;
     poster?: undefined | string;
     autobuffer?: undefined | string;
-    autoplay?: undefined | string;
-    loop?: undefined | string;
-    controls?: undefined | string;
+    autoplay?: undefined | string | boolean;
+    loop?: undefined | string | boolean;
+    controls?: undefined | string | boolean;
+    muted?: undefined | string | boolean;
+    playsinline?: undefined | string | boolean;
     width?: undefined | string;
     height?: undefined | string;
   }
