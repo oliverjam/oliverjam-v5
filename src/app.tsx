@@ -8,21 +8,21 @@ import { Missing } from "./pages/missing.tsx";
 export async function App(req: Request) {
 	try {
 		let url = new URL(req.url);
-		let { pathname } = url;
-		if (pathname.startsWith("/public")) {
-			let file = Bun.file("." + pathname);
-			return new Response(file);
-		}
-		let body = await page(req, url);
-		return html(body);
+		let body = await router(req, url);
+		return send(body);
 	} catch (error) {
 		console.error(error);
-		return html(Missing());
+		return send(Missing());
 	}
 }
 
-export function page(req: Request, url: URL) {
+function router(req: Request, url: URL) {
 	let p = url.pathname;
+	if (p.startsWith("/public")) {
+		let file = Bun.file("." + p);
+		if (!file.exists) return new Response(null, { status: 404 });
+		return new Response(file);
+	}
 	if (p === "/") return Home();
 	if (p === "/notes/") return Notes();
 	if (p === "/articles/") return Articles();
@@ -31,7 +31,8 @@ export function page(req: Request, url: URL) {
 	return Missing();
 }
 
-function html(body: string) {
+function send(body: string | Response) {
+	if (body instanceof Response) return body;
 	return new Response("<!doctype html>" + body, {
 		headers: { "content-type": "text/html; charset=utf8" },
 	});
@@ -39,3 +40,7 @@ function html(body: string) {
 
 class MissingError extends Error {}
 export let missing = () => new MissingError();
+
+function invariant(condition: unknown, message?: string): asserts condition {
+	if (!condition) throw new Error(message);
+}
