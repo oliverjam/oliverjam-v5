@@ -1,7 +1,8 @@
 import { missing } from "../app.tsx";
 import { model } from "../db.ts";
-import { Icon, ReadableDate, Row } from "../ui.tsx";
+import { ReadableDate, Row } from "../ui.tsx";
 import { Root } from "./root.tsx";
+import { Icon } from "../icon.tsx";
 
 export function Article(slug: string) {
 	let entry = model.articles.read(slug);
@@ -13,7 +14,7 @@ export function Article(slug: string) {
 			<header class="space-y-3 text-sm">
 				<Row class="gap-4">
 					<Row>
-						<Icon name="article" />
+						<Icon name="document-text" />
 						<span class="p-kind sr-only">Article</span>
 						<ReadableDate class="dt-published">{date}</ReadableDate>
 					</Row>

@@ -19,18 +19,6 @@ export function ReadableDate({ children, class: className }: DateProps) {
 	);
 }
 
-type Name = "note" | "article" | "clock";
-type IconProps = { size?: number; name: Name };
-const sprite = "/public/sprite.svg#";
-
-export function Icon({ size = 16, name, ...rest }: IconProps) {
-	return (
-		<svg {...rest} width={size} height={size} aria-hidden="true">
-			<use href={sprite + name} />
-		</svg>
-	);
-}
-
 type RowProps = { class?: string; children: unknown };
 export function Row({ class: className, ...rest }: RowProps) {
 	return <div {...rest} class={cn("flex items-center gap-1", className)} />;
