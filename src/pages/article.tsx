@@ -42,3 +42,16 @@ export function Article(slug: string) {
 		</Root>
 	);
 }
+
+export async function CreateArticle(body: FormData, slug: string) {
+	let md = body.get("content");
+	if (typeof md !== "string") return Res.bad("Invalid content");
+	try {
+		model.articles.create(slug, md);
+		return Res.redirect(`/articles/${slug}`);
+	} catch (e) {
+		console.error(e);
+		let msg = e instanceof Error ? e.message : String(e);
+		return Res.bad(msg);
+	}
+}

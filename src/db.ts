@@ -57,6 +57,17 @@ type Article = {
 	draft: 0 | 1;
 };
 
+type ArticleIn = {
+	$slug: string;
+	$title: string;
+	$time: number;
+	$date: string;
+	$intro: string;
+	$content: string;
+	$draft: 0 | 1;
+	$raw: string;
+};
+
 class Articles {
 	#list = db.query<Article, []>(sql`
     select slug, title, intro, time from articles
@@ -71,7 +82,29 @@ class Articles {
     limit 1
   `);
 	read = (slug: string) => this.#read.get(slug);
-  read = (slug: string) => this.#read.get(slug);
+
+	#create = db.query<void, ArticleIn>(sql`
+    insert into articles (slug, title, time, date, intro, content, raw, draft)
+    values ($slug, $title, $time, $date, $intro, $content, $raw, $draft)
+  `);
+	create = async (slug: string, md: string) => {
+		let { data, content, raw } = await markdown(md);
+		let time = 100.1;
+		let { title, draft, intro, date } = data;
+		invariant(typeof title === "string", `${slug} missing title`);
+		invariant(typeof intro === "string", `${slug} missing intro`);
+		invariant(typeof date === "string", `${slug} missing date`);
+		this.#create.run({
+			$slug: slug,
+			$title: title,
+			$intro: intro,
+			$draft: draft === true ? 1 : 0,
+			$time: time,
+			$date: date,
+			$content: content,
+			$raw: raw,
+		});
+	};
 }
 
 type Note = {
