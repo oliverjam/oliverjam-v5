@@ -1,10 +1,10 @@
-import { missing } from "../app.tsx";
+import { Res } from "../http.ts";
 import { model } from "../db.ts";
 import { Root } from "./root.tsx";
 
 export function Note(slug: string) {
 	let entry = model.notes.read(slug);
-	if (entry === null) throw missing();
+	if (entry === null) return Res.missing();
 	let { date, content } = entry;
 	let tags = model.tags.article(slug);
 	return (

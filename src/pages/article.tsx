@@ -1,4 +1,4 @@
-import { missing } from "../app.tsx";
+import { Res } from "../http.ts";
 import { model } from "../db.ts";
 import { ReadableDate, Row } from "../ui.tsx";
 import { Root } from "./root.tsx";
@@ -6,7 +6,8 @@ import { Icon } from "../icon.tsx";
 
 export function Article(slug: string) {
 	let entry = model.articles.read(slug);
-	if (entry === null) throw missing();
+	if (entry === null) return Res.missing();
+
 	let { title, date, time, intro, content } = entry;
 	let tags = model.tags.article(slug);
 	return (

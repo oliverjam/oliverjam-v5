@@ -1,3 +1,5 @@
+import { Res } from "./http.ts";
+import { Public } from "./pages/public.ts";
 import { Home } from "./pages/home.tsx";
 import { Notes } from "./pages/notes.tsx";
 import { Note } from "./pages/note.tsx";
@@ -5,24 +7,20 @@ import { Articles } from "./pages/articles.tsx";
 import { Article } from "./pages/article.tsx";
 import { Missing } from "./pages/missing.tsx";
 
-export async function App(req: Request) {
+export async function App(req: Request): Promise<Response> {
 	try {
 		let url = new URL(req.url);
 		let body = await router(req, url);
-		return send(body);
+		return body instanceof Response ? body : Res.html(body);
 	} catch (error) {
 		console.error(error);
-		return send(Missing());
+		return Res.html(Missing());
 	}
 }
 
-function router(req: Request, url: URL) {
+async function router(req: Request, url: URL): Promise<string | Response> {
 	let p = url.pathname;
-	if (p.startsWith("/public")) {
-		let file = Bun.file("." + p);
-		if (!file.exists) return new Response(null, { status: 404 });
-		return new Response(file);
-	}
+	if (p.startsWith("/public")) return Public(p);
 	if (p === "/") return Home();
 	if (p === "/notes/") return Notes();
 	if (p === "/articles/") return Articles();
@@ -31,16 +29,7 @@ function router(req: Request, url: URL) {
 	return Missing();
 }
 
-function send(body: string | Response) {
-	if (body instanceof Response) return body;
-	return new Response("<!doctype html>" + body, {
-		headers: { "content-type": "text/html; charset=utf8" },
-	});
+export function invariant(cond: unknown, msg?: string): asserts cond {
+	if (!cond) throw new Error(msg);
 }
 
-class MissingError extends Error {}
-export let missing = () => new MissingError();
-
-function invariant(condition: unknown, message?: string): asserts condition {
-	if (!condition) throw new Error(message);
-}
