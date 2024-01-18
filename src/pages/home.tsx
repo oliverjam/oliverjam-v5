@@ -1,6 +1,7 @@
 import { Root } from "./root.tsx";
 import { model } from "../db.ts";
 import { ReadableDate } from "../ui.tsx";
+import { Icon } from "../icon.tsx";
 
 export function Home() {
 	return (
@@ -9,12 +10,9 @@ export function Home() {
 			{model.all.list().map((e) => {
 				return (
 					<article class="h-entry space-y-1">
-						<header class="text-sm flex items-center gap-1">
-							<svg width="16" height="16" aria-hidden="true">
-								<use href={"/public/sprite.svg#" + e.kind} />
-							</svg>
+						<header class="text-sm flex items-center gap-1 font-mono">
+							<Icon name={icons[e.kind]} />
 							<span class="p-kind sr-only">{e.kind}</span>
-
 							{e.kind === "note" ? (
 								<a class="u-url" href={e.slug}>
 									<ReadableDate class="dt-published">{e.date}</ReadableDate>
@@ -37,3 +35,8 @@ export function Home() {
 		</Root>
 	);
 }
+
+let icons = {
+	article: "document-text",
+	note: "chat-bubble-oval-left-ellipsis",
+} as const;
