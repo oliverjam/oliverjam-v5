@@ -1,4 +1,6 @@
 import { Database } from "bun:sqlite";
+import { markdown } from "./markdown.tsx";
+import { invariant } from "./app.tsx";
 
 let db = new Database("oliverjam.db");
 
@@ -46,86 +48,87 @@ db.run(sql`
 `);
 
 type Article = {
-  slug: string;
-  title: string;
-  time: number;
-  date: string;
-  intro: string;
-  content: string;
-  draft: 0 | 1;
+	slug: string;
+	title: string;
+	time: number;
+	date: string;
+	intro: string;
+	content: string;
+	draft: 0 | 1;
 };
 
 class Articles {
-  #list = db.query<Article, []>(sql`
+	#list = db.query<Article, []>(sql`
     select slug, title, intro, time from articles
     where draft = 0
     order by date desc
   `);
-  list = () => this.#list.all();
+	list = () => this.#list.all();
 
-  #read = db.query<Article, [string]>(sql`
+	#read = db.query<Article, [string]>(sql`
     select slug, title, intro, time, date, content from articles
     where slug = ?
     limit 1
   `);
+	read = (slug: string) => this.#read.get(slug);
   read = (slug: string) => this.#read.get(slug);
 }
 
 type Note = {
-  slug: string;
-  date: string;
-  content: string;
-  draft: 0 | 1;
+	slug: string;
+	date: string;
+	content: string;
+	draft: 0 | 1;
 };
 
 class Notes {
-  #list = db.query<Note, []>(sql`
+	#list = db.query<Note, []>(sql`
     select slug, date, content from notes
     where draft = 0
     order by date desc
   `);
-  list = () => this.#list.all();
+	list = () => this.#list.all();
 
-  #read = db.query<Note, [string]>(sql`
+	#read = db.query<Note, [string]>(sql`
     select slug, date, content from notes
     where slug = ?
     limit 1
   `);
-  read = (slug: string) => this.#read.get(slug);
+	read = (slug: string) => this.#read.get(slug);
 }
 
 type Tag = {
-  slug: string;
+	slug: string;
 };
 
 class Tags {
-  #list = db.query<Tag, []>(sql`
+	#list = db.query<Tag, []>(sql`
     select slug from tags
   `);
-  list = () => this.#list.all();
+	list = () => this.#list.all();
 
-  #article = db.query<Tag, [string]>(sql`
+	#article = db.query<Tag, [string]>(sql`
     select tag_slug as slug from articles_tags where article_slug = ?
   `);
-  article = (slug: string) => this.#article.all(slug);
+	article = (slug: string) => this.#article.all(slug);
 
-  #note = db.query<Tag, [string]>(sql`
+	#note = db.query<Tag, [string]>(sql`
     select tag_slug as slug from notes_tags where note_slug = ?
   `);
-  note = (slug: string) => this.#note.all(slug);
+	note = (slug: string) => this.#note.all(slug);
 }
 
 type Entry = {
-  slug: string;
-  title: string | null;
-  intro: string;
-  date: string;
-  kind: "article" | "note";
-  tags: Array<Tag>;
+	slug: string;
+	title: string | null;
+	intro: string;
+	date: string;
+	kind: "article" | "note";
+	tags: Array<Tag>;
 };
 
 class All {
-  #list = db.query<Entry, []>(sql`
+	#list = db.query<Entry, []>(sql`
     select slug, title, intro, date, 'article' as kind from articles
     where draft = 0
     union
@@ -133,12 +136,12 @@ class All {
     where draft = 0
     order by date desc
   `);
-  list = () => this.#list.all();
+	list = () => this.#list.all();
 }
 
 export let model = {
-  articles: new Articles(),
-  notes: new Notes(),
-  all: new All(),
-  tags: new Tags(),
+	articles: new Articles(),
+	notes: new Notes(),
+	all: new All(),
+	tags: new Tags(),
 };
