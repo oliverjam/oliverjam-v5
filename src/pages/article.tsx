@@ -12,7 +12,7 @@ export function Article(slug: string) {
 	return (
 		<Root title={title} class="max-w-2xl p-8 space-y-4">
 			<header class="space-y-3 text-sm">
-				<Row class="gap-4">
+				<Row class="gap-4 font-mono">
 					<Row>
 						<Icon name="document-text" />
 						<span class="p-kind sr-only">Article</span>
@@ -26,7 +26,7 @@ export function Article(slug: string) {
 				<h1 class="p-name leading-none text-4xl font-serif text-balance">
 					{title}
 				</h1>
-				<Row>
+				<Row class="font-mono">
 					{tags.map((t) => (
 						<a class="p-category" href={`/tags/${t.slug}`}>
 							#{t.slug}
@@ -35,7 +35,7 @@ export function Article(slug: string) {
 				</Row>
 			</header>
 			<div class="space-y-4 leading-relaxed font-serif">
-				<p class="text-xl">{intro}</p>
+				<p class="text-xl font-display">{intro}</p>
 				{content}
 			</div>
 		</Root>

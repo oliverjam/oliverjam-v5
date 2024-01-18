@@ -34,4 +34,6 @@ export function Root({ title, class: className = "", children }: Props) {
 }
 
 let fonts =
-	"https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,700;1,400&display=swap";
+	"https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap";
+// let fonts =
+// 	"https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,700;1,400&display=swap";

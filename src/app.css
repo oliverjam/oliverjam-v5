@@ -18,6 +18,24 @@
 	}
 }
 
+@layer utilities {
+	.font-sans {
+		font-family: "Recursive", system-ui, sans-serif;
+	}
+	.font-display {
+		font-family: "Recursive", system-ui, sans-serif;
+		font-variation-settings: "CASL" 1, "CSRV" 1;
+	}
+	.font-serif {
+		font-family: "Recursive", ui-serif, Georgia, serif;
+		font-variation-settings: "CSRV" 1;
+	}
+	.font-mono {
+		font-family: "Recursive", ui-monospace, monospace;
+		font-variation-settings: "MONO" 1;
+	}
+}
+
 @layer components {
 	pre {
 		--code-1: hsl(160, 10%, 42%);
@@ -25,7 +43,7 @@
 		--code-3: hsl(172, 50%, 24%);
 		--code-4: hsl(178, 40%, 14%);
 		padding: theme(space.4);
-		background-color: hsl(184, 30%, 10%);
+		background-color: hsl(144, 82%, 95%);
 		font-size: theme(fontSize[sm]);
 		line-height: 1.4;
 		font-family: theme(fontFamily[mono]);
@@ -36,6 +54,7 @@
 
 	@media (prefers-color-scheme: dark) {
 		pre {
+			background-color: hsl(184, 30%, 10%);
 			--code-1: hsl(168, 38%, 42%);
 			--code-2: hsl(164, 40%, 50%);
 			--code-3: hsl(156, 50%, 75%);
