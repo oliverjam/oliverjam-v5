@@ -8,7 +8,6 @@ export function Root({ title, class: className = "", children }: Props) {
 	return (
 		<html lang="en" class="font-sans">
 			<head>
-				<meta charset="utf-8" />
 				<title>{`${title} - oliverjam.es`}</title>
 				<link rel="icon" href="/public/favicon.svg" />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
