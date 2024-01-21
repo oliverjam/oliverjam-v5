@@ -4,7 +4,7 @@ export class Res extends Response {
 	static html(body: string, init?: ResponseInit | number) {
 		if (typeof init === "number") init = { status: init };
 		let r = new Response("<!doctype html>" + body, init);
-		r.headers.set("content-type", "text/html; charset=utf8");
+		r.headers.set("content-type", "text/html; charset=utf-8");
 		return r;
 	}
 	static bad(body: string, headers: HeadersInit = {}) {
