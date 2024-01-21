@@ -11,7 +11,7 @@ export function Article(slug: string) {
 	let { title, date, time, intro, content } = entry;
 	let tags = model.tags.article(slug);
 	return (
-		<Root title={title} class="max-w-2xl p-8 space-y-4">
+		<Root title={title} class="max-w-3xl py-12 px-6 md:p-12">
 			<header class="space-y-3 text-sm">
 				<Row class="gap-4 font-mono">
 					<Row>
@@ -21,10 +21,10 @@ export function Article(slug: string) {
 					</Row>
 					<Row>
 						<Icon name="clock" />
-						<p>{(time / 60).toFixed(1)} minute read</p>
+						<span>{(time / 60).toFixed(1)} minute read</span>
 					</Row>
 				</Row>
-				<h1 class="p-name leading-none text-4xl font-serif text-balance">
+				<h1 class="p-name leading-none text-3xl md:text-4xl font-display text-balance">
 					{title}
 				</h1>
 				<Row class="font-mono">
@@ -35,8 +35,8 @@ export function Article(slug: string) {
 					))}
 				</Row>
 			</header>
-			<div class="space-y-4 leading-relaxed font-serif">
-				<p class="text-xl font-display">{intro}</p>
+			<div class="mt-6 leading-relaxed font-serif Content">
+				<p class="text-lg md:text-xl font-display">{intro}</p>
 				{content}
 			</div>
 		</Root>

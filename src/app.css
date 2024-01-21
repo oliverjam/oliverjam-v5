@@ -24,11 +24,11 @@
 	}
 	.font-display {
 		font-family: "Recursive", system-ui, sans-serif;
-		font-variation-settings: "CASL" 1, "CSRV" 1;
+		font-variation-settings: "CASL" 1, "CRSV" 1;
 	}
 	.font-serif {
 		font-family: "Recursive", ui-serif, Georgia, serif;
-		font-variation-settings: "CSRV" 1;
+		font-variation-settings: "CRSV" 1;
 	}
 	.font-mono {
 		font-family: "Recursive", ui-monospace, monospace;
@@ -37,68 +37,33 @@
 }
 
 @layer components {
-	pre {
-		--code-1: hsl(160, 10%, 42%);
-		--code-2: hsl(168, 47%, 34%);
-		--code-3: hsl(172, 50%, 24%);
-		--code-4: hsl(178, 40%, 14%);
-		padding: theme(space.4);
-		background-color: hsl(144, 82%, 95%);
-		font-size: theme(fontSize[sm]);
-		line-height: 1.4;
-		font-family: theme(fontFamily[mono]);
-		overflow: auto;
-		scrollbar-color: hsl(164, 40%, 50%) hsl(184, 30%, 10%);
-		scrollbar-width: thin;
-	}
-
-	@media (prefers-color-scheme: dark) {
-		pre {
-			background-color: hsl(184, 30%, 10%);
-			--code-1: hsl(168, 38%, 42%);
-			--code-2: hsl(164, 40%, 50%);
-			--code-3: hsl(156, 50%, 75%);
-			--code-4: hsl(148, 62%, 87%);
+	.Content {
+		> * + * {
+			margin-block-start: var(--s, theme(space.6));
 		}
-	}
 
-	pre::-webkit-scrollbar {
-		height: var(--space-1);
-	}
+		& > :is(h2, h3, h4, h5, h6) + * {
+			--s: theme(space.2);
+		}
 
-	pre::-webkit-scrollbar-thumb {
-		background: hsl(164, 40%, 50%);
-		border-radius: 1rem;
-	}
+		& code {
+			@apply font-mono;
+		}
 
-	pre::-webkit-scrollbar-track {
-		background: hsl(184, 30%, 10%);
-	}
+		& :is(ul, ol) {
+			padding-inline-start: 20px;
+		}
 
-	pre,
-	.token {
-		font-weight: normal;
-		color: var(--code-3);
-	}
+		& li::marker {
+			color: theme(colors[gray].400);
+			font-weight: 300;
+		}
 
-	.token:is(.punctuation, .comment) {
-		color: var(--code-1);
-	}
-
-	.token:is(.keyword, .unit) {
-		color: var(--code-2);
-	}
-
-	.token:is(.key, .property, .attr-value) {
-		color: var(--code-4);
-	}
-
-	.token:is(.comment) {
-		font-style: italic;
-	}
-
-	.token:is(.function, .tag, .selector) {
-		color: var(--code-2);
-		font-weight: bold;
+		& pre {
+			font-size: theme(fontSize[sm]);
+			line-height: 1.4;
+			overflow: auto;
+			scrollbar-width: thin;
+		}
 	}
 }
