@@ -7,7 +7,7 @@ export function Articles() {
 			<h1>Articles</h1>
 			<ul>
 				{model.articles.list().map((e) => {
-					let tags = model.tags.article(e.slug);
+					let tags = model.articles.tags.read(e.slug);
 					return (
 						<li>
 							<p class="p-kind">Article</p>

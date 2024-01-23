@@ -3,13 +3,14 @@ import { model } from "../db.ts";
 import { ReadableDate, Row } from "../ui.tsx";
 import { Root } from "./root.tsx";
 import { Icon } from "../icon.tsx";
+import { invariant } from "../app.tsx";
 
 export function Article(slug: string) {
 	let entry = model.articles.read(slug);
 	if (entry === null) return Res.missing();
 
 	let { title, date, time, intro, content } = entry;
-	let tags = model.tags.article(slug);
+	let tags = model.articles.tags.read(slug);
 	return (
 		<Root title={title} class="max-w-3xl py-12 px-6 md:p-12">
 			<header class="space-y-3 text-sm">
@@ -43,12 +44,33 @@ export function Article(slug: string) {
 	);
 }
 
-export async function CreateArticle(body: FormData, slug: string) {
-	let md = body.get("content");
-	if (typeof md !== "string") return Res.bad("Invalid content");
+export async function CreateArticle(body: FormData, $slug: string) {
+	let $title = body.get("title");
+	let $intro = body.get("intro");
+	let $date = body.get("date");
+	let draft = body.has("draft");
+	let time = body.get("time");
+	let tags = body.getAll("tag");
+	let $content = body.get("content");
 	try {
-		model.articles.create(slug, md);
-		return Res.redirect(`/articles/${slug}`);
+		invariant(typeof $title === "string", `Missing title`);
+		invariant(typeof $intro === "string", `Missing intro`);
+		invariant(typeof $date === "string", `Missing date`);
+		invariant(typeof time === "string", `Missing time`);
+		invariant(typeof $content === "string", `Missing content`);
+		model.articles.create(
+			{
+				$slug,
+				$title,
+				$intro,
+				$date,
+				$draft: draft ? 1 : 0,
+				$time: Number(time),
+				$content,
+			},
+			tags
+		);
+		return Res.redirect(`/articles/${$slug}`);
 	} catch (e) {
 		console.error(e);
 		let msg = e instanceof Error ? e.message : String(e);

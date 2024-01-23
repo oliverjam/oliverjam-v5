@@ -1,6 +1,4 @@
 import { Database } from "bun:sqlite";
-import { markdown } from "./markdown.tsx";
-import { invariant } from "./app.tsx";
 
 let db = new Database("oliverjam.db");
 
@@ -14,7 +12,6 @@ db.run(sql`
     date text not null,
     intro text not null,
     content text not null,
-    raw text not null,
     draft integer check (draft in (0, 1)),
     created text default current_timestamp
   ) strict;
@@ -24,7 +21,6 @@ db.run(sql`
     slug text primary key,
     date text not null,
     content text not null,
-    raw text not null,
     draft integer check (draft in (0, 1)),
     created text default current_timestamp
   ) strict;
@@ -65,7 +61,6 @@ type ArticleIn = {
 	$intro: string;
 	$content: string;
 	$draft: 0 | 1;
-	$raw: string;
 };
 
 class Articles {
@@ -84,26 +79,32 @@ class Articles {
 	read = (slug: string) => this.#read.get(slug);
 
 	#create = db.query<void, ArticleIn>(sql`
-    insert into articles (slug, title, time, date, intro, content, raw, draft)
-    values ($slug, $title, $time, $date, $intro, $content, $raw, $draft)
+    insert into articles (slug, title, time, date, intro, content, draft)
+    values ($slug, $title, $time, $date, $intro, $content, $draft)
   `);
-	create = async (slug: string, md: string) => {
-		let { data, content, raw } = await markdown(md);
-		let time = 100.1;
-		let { title, draft, intro, date } = data;
-		invariant(typeof title === "string", `${slug} missing title`);
-		invariant(typeof intro === "string", `${slug} missing intro`);
-		invariant(typeof date === "string", `${slug} missing date`);
-		this.#create.run({
-			$slug: slug,
-			$title: title,
-			$intro: intro,
-			$draft: draft === true ? 1 : 0,
-			$time: time,
-			$date: date,
-			$content: content,
-			$raw: raw,
-		});
+	create = (article: ArticleIn, tags: Array<FormDataEntryValue>) => {
+		this.#create.run(article);
+		tags.forEach((t) => this.tags.create(String(t), article.$slug));
+	};
+
+	tags = new ArticlesTags();
+}
+
+class ArticlesTags {
+	#list = db.query<Tag, []>(sql`select tag_slug as slug from articles_tags`);
+	list = () => this.#list.all();
+
+	#read = db.query<Tag, [string]>(sql`
+    select tag_slug as slug from articles_tags where article_slug = ?
+  `);
+	read = (slug: string) => this.#read.all(slug);
+
+	#create = db.query<void, [string, string]>(sql`
+		insert into articles_tags (tag_slug, article_slug) values (?, ?)
+	`);
+	create = (tag: string, article: string) => {
+		this.#create.run(tag, article);
+		model.tags.create(tag);
 	};
 }
 
@@ -139,6 +140,12 @@ class Tags {
     select slug from tags
   `);
 	list = () => this.#list.all();
+
+	#create = db.query<void, [string]>(sql`
+		insert into tags values (?)
+		on conflict do nothing
+	`);
+	create = (tag: string) => this.#create.run(tag);
 
 	#article = db.query<Tag, [string]>(sql`
     select tag_slug as slug from articles_tags where article_slug = ?
