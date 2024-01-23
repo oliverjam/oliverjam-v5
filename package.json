@@ -1,20 +1,20 @@
 {
-  "name": "oliverjames-v5",
-  "module": "src/entry.prod.ts",
-  "type": "module",
-  "scripts": {
-    "css": "tailwindcss -i src/app.css -o public/app.css",
-    "start": "bun run css && bun run src/entry.prod.ts",
-    "dev": "bun run --hot src/entry.dev.ts"
-  },
-  "dependencies": {
-    "htmljsx": "file:./src/htmljsx/"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "tailwindcss": "^3.4.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  }
+	"name": "oliverjames-v5",
+	"module": "src/entry.prod.ts",
+	"type": "module",
+	"scripts": {
+		"css": "tailwindcss -i src/app.css -o public/app.css",
+		"start": "bun run css && bun run src/entry.prod.ts",
+		"dev": "bun run --hot src/entry.dev.ts"
+	},
+	"dependencies": {
+		"htmljsx": "file:./src/htmljsx/"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"tailwindcss": "^3.4.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	}
 }
