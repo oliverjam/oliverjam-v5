@@ -1,3 +1,5 @@
 import { App } from "./app.tsx";
 
-Bun.serve({ fetch: App });
+let server = Bun.serve({ fetch: App, port: 8080 });
+
+console.log(`Running → http://localhost:${server.port}`);

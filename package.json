@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"css": "tailwindcss -i src/app.css -o public/app.css",
-		"start": "bun run css && bun run src/entry.prod.ts",
+		"start": "bun run src/entry.prod.ts",
 		"dev": "bun run --hot src/entry.dev.ts"
 	},
 	"dependencies": {

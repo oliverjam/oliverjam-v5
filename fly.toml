@@ -1,0 +1,9 @@
+app = "oliverjam"
+primary_region = "lhr"
+
+[http_service]
+force_https = true
+
+[mounts]
+source = "data"
+destination = "/app/data"

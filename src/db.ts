@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
 
-let db = new Database("oliverjam.db");
+let db = new Database("./data/blog.db");
 
 let sql = String.raw;
 
