@@ -91,7 +91,12 @@ class Articles {
 }
 
 class ArticlesTags {
-	#list = db.query<Tag, []>(sql`select tag_slug as slug from articles_tags`);
+	#list = db.query<{ slug: string; count: number }, []>(sql`
+		select tag_slug as slug, count(tag_slug) as count
+		from articles_tags
+		group by tag_slug
+		order by count desc
+	`);
 	list = () => this.#list.all();
 
 	#read = db.query<Tag, [string]>(sql`
@@ -158,7 +163,7 @@ class Tags {
 	note = (slug: string) => this.#note.all(slug);
 }
 
-type Entry = {
+export type Entry = {
 	slug: string;
 	title: string | null;
 	intro: string;

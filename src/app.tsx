@@ -5,6 +5,8 @@ import { Notes } from "./pages/notes.tsx";
 import { Note } from "./pages/note.tsx";
 import { Articles } from "./pages/articles.tsx";
 import { Article, CreateArticle } from "./pages/article.tsx";
+import { Tags } from "./pages/tags.tsx";
+import { Tag } from "./pages/tag.tsx";
 import { Missing } from "./pages/missing.tsx";
 
 export async function App(req: Request): Promise<Response> {
@@ -22,11 +24,17 @@ async function router(req: Request, url: URL): Promise<string | Response> {
 	let p = url.pathname;
 	if (req.method === "GET") {
 		if (p.startsWith("/public")) return Public(p);
+
 		if (p === "/") return Home();
+
 		if (p === "/notes/") return Notes();
+		if (p.startsWith("/notes/")) return Note(p.slice(7));
+
 		if (p === "/articles/") return Articles();
-		if (p.startsWith("/notes/")) return Note(p.slice(6));
 		if (p.startsWith("/articles/")) return Article(p.slice(10));
+
+		if (p === "/tags/") return Tags();
+		if (p.startsWith("/tags/")) return Tag(p.slice(6));
 	}
 	if (req.method === "POST") {
 		let body = await req.formData();
@@ -38,5 +46,3 @@ async function router(req: Request, url: URL): Promise<string | Response> {
 export function invariant(cond: unknown, msg?: string): asserts cond {
 	if (!cond) throw new Error(msg);
 }
-
-// curl -X POST localhost:3000/articles/xxx --data-urlencode content@content/diy-jsx.md
