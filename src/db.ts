@@ -4,44 +4,42 @@ let db = new Database("./data/blog.db");
 
 let sql = String.raw;
 
-db.run(sql`
-  create table if not exists articles (
-    slug text primary key,
-    title text not null,
-    time real not null,
-    date text not null,
-    intro text not null,
-    content text not null,
-    draft integer check (draft in (0, 1)),
-    created text default current_timestamp
-  ) strict;
-`);
-db.run(sql`
-  create table if not exists notes (
-    slug text primary key,
-    date text not null,
-    content text not null,
-    draft integer check (draft in (0, 1)),
-    created text default current_timestamp
-  ) strict;
-`);
-db.run(sql`
-  create table if not exists tags (slug text primary key) strict
-`);
-db.run(sql`
-  create table if not exists articles_tags (
-    article_slug text references articles(slug),
-    tag_slug text references tags(slug),
-    primary key (article_slug, tag_slug)
-  ) strict
-`);
-db.run(sql`
-  create table if not exists notes_tags (
-    note_slug text references notes(slug),
-    tag_slug text references tags(slug),
-    primary key (note_slug, tag_slug)
-  ) strict
-`);
+let schema = sql`
+	create table if not exists articles (
+		slug text primary key,
+		title text not null,
+		time real not null,
+		date text not null,
+		intro text not null,
+		content text not null,
+		draft integer check (draft in (0, 1)),
+		created text default current_timestamp
+	) strict;
+
+	create table if not exists notes (
+		slug text primary key,
+		date text not null,
+		content text not null,
+		draft integer check (draft in (0, 1)),
+		created text default current_timestamp
+	) strict;
+
+	create table if not exists tags (slug text primary key) strict;
+
+	create table if not exists articles_tags (
+		article_slug text references articles(slug),
+		tag_slug text references tags(slug),
+		primary key (article_slug, tag_slug)
+	) strict;
+
+	create table if not exists notes_tags (
+		note_slug text references notes(slug),
+		tag_slug text references tags(slug),
+		primary key (note_slug, tag_slug)
+	) strict;
+`;
+
+db.run(schema);
 
 type Article = {
 	slug: string;
