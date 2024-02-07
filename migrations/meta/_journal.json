@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1707244032905,
+      "tag": "0000_eager_christian_walker",
+      "breakpoints": true
+    }
+  ]
+}

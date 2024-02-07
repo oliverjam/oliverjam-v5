@@ -1,5 +1,5 @@
 import { Res } from "../http.ts";
-import { model } from "../db.ts";
+import { model } from "../database/db.ts";
 import { ReadableDate, Row } from "../ui.tsx";
 import { Root } from "./root.tsx";
 import { Icon } from "../icon.tsx";

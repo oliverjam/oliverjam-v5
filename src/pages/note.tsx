@@ -1,5 +1,5 @@
 import { Res } from "../http.ts";
-import { model } from "../db.ts";
+import { model } from "../database/db.ts";
 import { Root } from "./root.tsx";
 
 export function Note(slug: string) {

@@ -1,4 +1,4 @@
-import { model } from "../db.ts";
+import { model } from "../database/db.ts";
 import { Root } from "./root.tsx";
 
 export function Articles() {

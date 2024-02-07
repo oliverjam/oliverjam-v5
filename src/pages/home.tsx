@@ -1,6 +1,6 @@
 import { Root } from "./root.tsx";
-import { model } from "../db.ts";
-import { Entry } from "./entry.tsx";
+import { model } from "../database/db.ts";
+import { Entry } from "../ui.tsx";
 
 export function Home() {
 	return (
