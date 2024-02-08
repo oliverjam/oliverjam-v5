@@ -1,4 +1,4 @@
-import type { Post } from "./db.ts";
+import type { Post, Article, Tags } from "./db.ts";
 import { Icon } from "./icon.tsx";
 
 type DateProps = { children: string; class: string };
@@ -27,6 +27,47 @@ export function Entry(props: Post) {
 			)}
 			<div class="e-summary">{summary}</div>
 		</article>
+	);
+}
+
+export function Article({
+	title,
+	created,
+	time,
+	intro,
+	content,
+	tags,
+}: Article & { tags: Tags }) {
+	return (
+		<>
+			<header class="space-y-3 text-sm">
+				<Row class="gap-4 font-mono">
+					<Row>
+						<Icon name="document-text" />
+						<span class="p-kind sr-only">Article</span>
+						<ReadableDate class="dt-published">{created}</ReadableDate>
+					</Row>
+					<Row>
+						<Icon name="clock" />
+						<span>{(time / 60).toFixed(1)} minute read</span>
+					</Row>
+				</Row>
+				<h1 class="p-name leading-none text-3xl md:text-4xl font-display text-balance">
+					{title}
+				</h1>
+				<Row class="font-mono">
+					{tags.map((t) => (
+						<a class="p-category" href={`/tags/${t.slug}`}>
+							#{t.slug}
+						</a>
+					))}
+				</Row>
+			</header>
+			<div class="mt-6 leading-relaxed font-serif Content">
+				<p class="text-lg md:text-xl font-display">{intro}</p>
+				{content}
+			</div>
+		</>
 	);
 }
 

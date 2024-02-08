@@ -24,12 +24,22 @@ export function Root({ title, class: className = "", children }: Props) {
 				>
 					Skip to content
 				</a>
-				<main id="main" tabindex="-1" class={className}>
+				<main id="main" tabindex="-1">
 					{children}
 				</main>
 			</body>
 		</html>
 	);
+}
+
+export function Page({
+	children,
+	class: className = "",
+}: {
+	children: unknown;
+	class?: string;
+}) {
+	return <div class={"space-y-8 p-8 max-w-2xl " + className}>{children}</div>;
 }
 
 let fonts =

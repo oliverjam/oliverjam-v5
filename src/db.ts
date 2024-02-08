@@ -60,6 +60,7 @@ export type Note = {
 type NoteIn = Omit<Note, "created">;
 
 type Tag = { slug: string };
+export type Tags = Array<Tag>;
 
 type Insert<T> = {
 	[K in keyof T as `$${string & K}`]: T[K];
