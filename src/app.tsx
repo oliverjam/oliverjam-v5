@@ -1,7 +1,6 @@
 import { Res, errors, HttpError } from "./http.ts";
-import { CreateArticle } from "./pages/article.tsx";
-import { Root, Page } from "./pages/root.tsx";
-import { model, type Article as ArticleType } from "./db.ts";
+import { Root, Page } from "./root.tsx";
+import { model, type Article as ArticleType, parse_article } from "./db.ts";
 import { Entry, Article } from "./ui.tsx";
 
 export async function App(req: Request): Promise<Response> {
@@ -38,11 +37,13 @@ async function router(req: Request, url: URL): Promise<string | Response> {
 		}
 
 		if (p === "/") {
+			let type = url.searchParams.get("type");
+			invariant(type === "article" || type === "note" || type === null);
 			return (
 				<Root title="Home">
 					<Page>
 						<h1>Home</h1>
-						{model.posts.list().map((e) => (
+						{model.posts.list(type).map((e) => (
 							<Entry {...e} />
 						))}
 					</Page>
@@ -116,7 +117,15 @@ async function router(req: Request, url: URL): Promise<string | Response> {
 
 	if (req.method === "POST") {
 		let body = await req.formData();
-		if (p.startsWith("/articles/")) return CreateArticle(body, p.slice(10));
+		if (p === "/articles/") {
+			try {
+				let [post, tags] = parse_article(body);
+				model.posts.create(post, tags);
+				return Res.redirect(`/articles/${post.slug}`);
+			} catch (e) {
+				throw errors.invalid(e instanceof Error ? e.message : String(e));
+			}
+		}
 	}
 
 	throw errors.missing();

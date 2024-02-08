@@ -5,14 +5,10 @@ export class Res extends Response {
 		r.headers.set("content-type", "text/html; charset=utf-8");
 		return r;
 	}
-	static bad(body: string, headers: HeadersInit = {}) {
-		return new Response(body, { status: 400, headers });
-	}
 }
 
 export class HttpError extends Error {
 	status = 0;
-	message = "";
 }
 
 export class MissingError extends HttpError {
@@ -25,11 +21,21 @@ export class ServerError extends HttpError {
 	message = "Something went wrong";
 }
 
+export class InvalidError extends HttpError {
+	status = 400;
+	constructor(message: string) {
+		super(message);
+	}
+}
+
 export let errors = {
 	missing() {
 		return new MissingError();
 	},
 	server() {
 		return new ServerError();
+	},
+	invalid(msg: string) {
+		return new InvalidError(msg);
 	},
 };

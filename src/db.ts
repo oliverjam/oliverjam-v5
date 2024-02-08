@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite";
 import type { SQLQueryBindings } from "bun:sqlite";
+import { invariant } from "./app.tsx";
 
 let db = new Database("./data/blog.db");
 
@@ -47,7 +48,7 @@ export type Article = {
 	content: string;
 };
 
-type ArticleIn = Omit<Article, "created">;
+export type ArticleIn = Omit<Article, "created">;
 
 export type Note = {
 	type: "note";
@@ -72,9 +73,36 @@ type PostType<T extends Post["type"]> = T extends "article"
 	? Note
 	: Post;
 
+export function parse_article(body: FormData): [ArticleIn, Array<string>] {
+	let slug = body.get("slug");
+	let title = body.get("title");
+	let intro = body.get("intro");
+	let draft = body.has("draft");
+	let time = body.get("time");
+	let content = body.get("content");
+	let tags = body.getAll("tags");
+	invariant(typeof slug === "string", `Missing slug`);
+	invariant(typeof title === "string", `Missing title`);
+	invariant(typeof intro === "string", `Missing intro`);
+	invariant(typeof time === "string", `Missing time`);
+	invariant(typeof content === "string", `Missing content`);
+	return [
+		{
+			slug,
+			type: "article",
+			title,
+			intro,
+			draft: draft ? 1 : 0,
+			time: Number(time),
+			content,
+		},
+		tags.map(String),
+	];
+}
+
 export let model = {
 	posts: {
-		list<T extends Post["type"]>(type?: T) {
+		list<T extends Post["type"]>(type?: T | null) {
 			return sql<PostType<T>, [T | null]>`
 				select * from posts
 				where draft = 0 and type = coalesce(?, type)
