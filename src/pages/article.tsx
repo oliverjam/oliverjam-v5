@@ -1,16 +1,16 @@
 import { Res } from "../http.ts";
-import { model } from "../db.ts";
+import { model, type Article } from "../db.ts";
 import { ReadableDate, Row } from "../ui.tsx";
 import { Root } from "./root.tsx";
 import { Icon } from "../icon.tsx";
 import { invariant } from "../app.tsx";
 
 export function Article(slug: string) {
-	let entry = model.articles.read(slug);
+	let entry = model.posts.read<Article>(slug);
 	if (entry === null) return Res.missing();
 
-	let { title, date, time, intro, content } = entry;
-	let tags = model.articles.tags.read(slug);
+	let { title, created, time, intro, content } = entry;
+	let tags = model.tags.post(slug);
 	return (
 		<Root title={title} class="max-w-3xl py-12 px-6 md:p-12">
 			<header class="space-y-3 text-sm">
@@ -18,7 +18,7 @@ export function Article(slug: string) {
 					<Row>
 						<Icon name="document-text" />
 						<span class="p-kind sr-only">Article</span>
-						<ReadableDate class="dt-published">{date}</ReadableDate>
+						<ReadableDate class="dt-published">{created}</ReadableDate>
 					</Row>
 					<Row>
 						<Icon name="clock" />
@@ -44,33 +44,31 @@ export function Article(slug: string) {
 	);
 }
 
-export async function CreateArticle(body: FormData, $slug: string) {
-	let $title = body.get("title");
-	let $intro = body.get("intro");
-	let $date = body.get("date");
+export async function CreateArticle(body: FormData, slug: string) {
+	let title = body.get("title");
+	let intro = body.get("intro");
 	let draft = body.has("draft");
 	let time = body.get("time");
 	let tags = body.getAll("tag");
-	let $content = body.get("content");
+	let content = body.get("content");
 	try {
-		invariant(typeof $title === "string", `Missing title`);
-		invariant(typeof $intro === "string", `Missing intro`);
-		invariant(typeof $date === "string", `Missing date`);
+		invariant(typeof title === "string", `Missing title`);
+		invariant(typeof intro === "string", `Missing intro`);
 		invariant(typeof time === "string", `Missing time`);
-		invariant(typeof $content === "string", `Missing content`);
-		model.articles.create(
+		invariant(typeof content === "string", `Missing content`);
+		model.posts.create(
 			{
-				$slug,
-				$title,
-				$intro,
-				$date,
-				$draft: draft ? 1 : 0,
-				$time: Number(time),
-				$content,
+				slug,
+				type: "article",
+				title,
+				intro,
+				draft: draft ? 1 : 0,
+				time: Number(time),
+				content,
 			},
-			tags
+			tags.map(String)
 		);
-		return Res.redirect(`/articles/${$slug}`);
+		return Res.redirect(`/articles/${slug}`);
 	} catch (e) {
 		console.error(e);
 		let msg = e instanceof Error ? e.message : String(e);

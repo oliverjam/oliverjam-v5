@@ -1,190 +1,140 @@
 import { Database } from "bun:sqlite";
+import type { SQLQueryBindings } from "bun:sqlite";
 
 let db = new Database("./data/blog.db");
 
-let sql = String.raw;
+function sql<Return, Bind extends SQLQueryBindings | SQLQueryBindings[] = []>(
+	strings: TemplateStringsArray
+) {
+	return db.query<Return, Bind>(strings.join(""));
+}
 
-let schema = sql`
-	create table if not exists articles (
-		slug text primary key,
-		title text not null,
-		time real not null,
-		date text not null,
-		intro text not null,
-		content text not null,
-		draft integer check (draft in (0, 1)),
-		created text default current_timestamp
+let schema = /*sql*/ `
+	create table if not exists posts (
+		type text not null check(type in ('article', 'post')),
+		slug text primary key not null,
+		draft integer check (draft in (0, 1)) not null,
+		created text default current_timestamp not null,
+		title text,
+		time real,
+		intro text,
+		content text
 	) strict;
 
-	create table if not exists notes (
-		slug text primary key,
-		date text not null,
-		content text not null,
-		draft integer check (draft in (0, 1)),
-		created text default current_timestamp
+	create table if not exists tags (
+		slug text primary key on conflict ignore
 	) strict;
 
-	create table if not exists tags (slug text primary key) strict;
-
-	create table if not exists articles_tags (
-		article_slug text references articles(slug),
-		tag_slug text references tags(slug),
-		primary key (article_slug, tag_slug)
-	) strict;
-
-	create table if not exists notes_tags (
-		note_slug text references notes(slug),
-		tag_slug text references tags(slug),
-		primary key (note_slug, tag_slug)
+	create table if not exists posts_tags (
+		post text references posts(slug),
+		tag text references tags(slug),
+		primary key (post, tag)
 	) strict;
 `;
 
 db.run(schema);
 
-type Article = {
+export type Post = Article | Note;
+
+export type Article = {
+	type: "article";
 	slug: string;
+	created: string;
+	draft: 0 | 1;
 	title: string;
 	time: number;
-	date: string;
 	intro: string;
 	content: string;
-	draft: 0 | 1;
 };
 
-type ArticleIn = {
-	$slug: string;
-	$title: string;
-	$time: number;
-	$date: string;
-	$intro: string;
-	$content: string;
-	$draft: 0 | 1;
-};
+type ArticleIn = Omit<Article, "created">;
 
-class Articles {
-	#list = db.query<Article, []>(sql`
-    select slug, title, intro, time from articles
-    where draft = 0
-    order by date desc
-  `);
-	list = () => this.#list.all();
-
-	#read = db.query<Article, [string]>(sql`
-    select slug, title, intro, time, date, content from articles
-    where slug = ?
-    limit 1
-  `);
-	read = (slug: string) => this.#read.get(slug);
-
-	#create = db.query<void, ArticleIn>(sql`
-    insert into articles (slug, title, time, date, intro, content, draft)
-    values ($slug, $title, $time, $date, $intro, $content, $draft)
-  `);
-	create = (article: ArticleIn, tags: Array<FormDataEntryValue>) => {
-		this.#create.run(article);
-		tags.forEach((t) => this.tags.create(String(t), article.$slug));
-	};
-
-	tags = new ArticlesTags();
-}
-
-class ArticlesTags {
-	#list = db.query<{ slug: string; count: number }, []>(sql`
-		select tag_slug as slug, count(tag_slug) as count
-		from articles_tags
-		group by tag_slug
-		order by count desc
-	`);
-	list = () => this.#list.all();
-
-	#read = db.query<Tag, [string]>(sql`
-    select tag_slug as slug from articles_tags where article_slug = ?
-  `);
-	read = (slug: string) => this.#read.all(slug);
-
-	#create = db.query<void, [string, string]>(sql`
-		insert into articles_tags (tag_slug, article_slug) values (?, ?)
-	`);
-	create = (tag: string, article: string) => {
-		this.#create.run(tag, article);
-		model.tags.create(tag);
-	};
-}
-
-type Note = {
+export type Note = {
+	type: "note";
 	slug: string;
-	date: string;
+	created: string;
+	draft: 0 | 1;
 	content: string;
-	draft: 0 | 1;
 };
 
-class Notes {
-	#list = db.query<Note, []>(sql`
-    select slug, date, content from notes
-    where draft = 0
-    order by date desc
-  `);
-	list = () => this.#list.all();
+type NoteIn = Omit<Note, "created">;
 
-	#read = db.query<Note, [string]>(sql`
-    select slug, date, content from notes
-    where slug = ?
-    limit 1
-  `);
-	read = (slug: string) => this.#read.get(slug);
-}
+type Tag = { slug: string };
 
-type Tag = {
-	slug: string;
+type Insert<T> = {
+	[K in keyof T as `$${string & K}`]: T[K];
 };
 
-class Tags {
-	#list = db.query<Tag, []>(sql`
-    select slug from tags
-  `);
-	list = () => this.#list.all();
-
-	#create = db.query<void, [string]>(sql`
-		insert into tags values (?)
-		on conflict do nothing
-	`);
-	create = (tag: string) => this.#create.run(tag);
-
-	#article = db.query<Tag, [string]>(sql`
-    select tag_slug as slug from articles_tags where article_slug = ?
-  `);
-	article = (slug: string) => this.#article.all(slug);
-
-	#note = db.query<Tag, [string]>(sql`
-    select tag_slug as slug from notes_tags where note_slug = ?
-  `);
-	note = (slug: string) => this.#note.all(slug);
-}
-
-export type Entry = {
-	slug: string;
-	title: string | null;
-	intro: string;
-	date: string;
-	kind: "article" | "note";
-	tags: Array<Tag>;
-};
-
-class All {
-	#list = db.query<Entry, []>(sql`
-    select slug, title, intro, date, 'article' as kind from articles
-    where draft = 0
-    union
-    select slug, null as title, content as intro, date, 'note' as kind from notes
-    where draft = 0
-    order by date desc
-  `);
-	list = () => this.#list.all();
-}
+type PostType<T extends Post["type"]> = T extends "article"
+	? Article
+	: T extends "note"
+	? Note
+	: Post;
 
 export let model = {
-	articles: new Articles(),
-	notes: new Notes(),
-	all: new All(),
-	tags: new Tags(),
+	posts: {
+		list<T extends Post["type"]>(type?: T) {
+			return sql<PostType<T>, [T | null]>`
+				select * from posts
+				where draft = 0 and type = coalesce(?, type)
+				order by created desc
+			`.all(type || null);
+		},
+		read<T extends Post>(slug: string) {
+			return sql<T, string>`
+				select * from posts where slug = ?
+			`.get(slug);
+		},
+		create(post: ArticleIn | NoteIn, tags: Array<string>) {
+			db.transaction(() => {
+				let $slug = post.slug.replace(/\W/g, "-");
+				const $draft = post.draft ? 1 : 0;
+				if (post.type === "article") {
+					sql<void, Insert<ArticleIn>>`
+					insert into posts (slug, type, draft, content, title, time, intro)
+					values ($slug, $type, $draft, $content, $title, $time, $intro)
+				`.run({
+						$slug,
+						$draft,
+						$type: post.type,
+						$content: post.content,
+						$title: post.title,
+						$time: post.time,
+						$intro: post.intro,
+					});
+				}
+				if (post.type === "note") {
+					sql<void, Insert<NoteIn>>`
+						insert into posts (slug, type, draft, content)
+						values ($slug, $type, $draft, $content)
+					`.run({ $slug, $type: post.type, $draft, $content: post.content });
+				}
+				for (let tag of tags) model.tags.create(tag, $slug);
+			})();
+		},
+	},
+	tags: {
+		list() {
+			return sql<{ tag: string; count: number }>`
+				select tag, count(tag) as count from posts_tags group by tag
+			`.all();
+		},
+		posts(tag: string) {
+			console.log({ tag });
+			return sql<Post, string>`
+				select posts.* from posts_tags join posts on post = slug where tag = ?
+			`.all(tag);
+		},
+		post(post_slug: string) {
+			return sql<Tag, string>`
+				select tag as slug from posts_tags where post = ?
+			`.all(post_slug);
+		},
+		create(tag: string, slug: string) {
+			sql<void, typeof tag>`insert into tags values (?)`.run(tag);
+			sql<void, [typeof tag, typeof slug]>`
+				insert into posts_tags (tag, post) values (?, ?)
+			`.run(tag, slug);
+		},
+	},
 };

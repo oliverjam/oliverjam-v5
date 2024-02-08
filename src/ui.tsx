@@ -1,30 +1,31 @@
-import type { Entry } from "./db.ts";
+import type { Post } from "./db.ts";
 import { Icon } from "./icon.tsx";
 
 type DateProps = { children: string; class: string };
 
-export function Entry({ slug, kind, date, title, intro }: Entry) {
+export function Entry(props: Post) {
+	let summary = props.type === "article" ? props.intro : props.content;
 	return (
 		<article class="h-entry space-y-1">
 			<header class="text-sm flex items-center gap-1 font-mono">
-				<Icon name={icons[kind]} />
-				<span class="p-kind sr-only">{kind}</span>
-				{kind === "note" ? (
-					<a class="u-url" href={slug}>
-						<ReadableDate class="dt-published">{date}</ReadableDate>
+				<Icon name={icons[props.type]} />
+				<span class="p-kind sr-only">{props.type}</span>
+				{props.type === "note" ? (
+					<a class="u-url" href={props.slug}>
+						<ReadableDate class="dt-published">{props.created}</ReadableDate>
 					</a>
 				) : (
-					<ReadableDate class="dt-published">{date}</ReadableDate>
+					<ReadableDate class="dt-published">{props.created}</ReadableDate>
 				)}
 			</header>
-			{kind === "article" && (
+			{props.type === "article" && (
 				<h2 class="text-base">
-					<a class="u-url p-name" href={`/${kind}s/${slug}`}>
-						{title}
+					<a class="u-url p-name" href={`/${props.type}s/${props.slug}`}>
+						{props.title}
 					</a>
 				</h2>
 			)}
-			<div class="e-summary">{intro}</div>
+			<div class="e-summary">{summary}</div>
 		</article>
 	);
 }

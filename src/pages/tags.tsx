@@ -2,7 +2,7 @@ import { model } from "../db.ts";
 import { Root } from "./root.tsx";
 
 export function Tags() {
-	let tags = model.articles.tags.list();
+	let tags = model.tags.list();
 	return (
 		<Root title="Tags" class="space-y-8 p-8 max-w-2xl">
 			<h1>Tags</h1>
@@ -10,8 +10,8 @@ export function Tags() {
 				{tags.map((t) => {
 					return (
 						<li>
-							<a href={"/tags/" + t.slug.replace(/\W/g, "-")}>#{t.slug}</a>
-							<p>{t.count} articles</p>
+							<a href={"/tags/" + t.tag.replace(/\W/g, "-")}>#{t.tag}</a>
+							<p>{t.count} posts</p>
 						</li>
 					);
 				})}

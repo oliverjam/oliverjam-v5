@@ -6,12 +6,12 @@ export function Articles() {
 		<Root title="Articles">
 			<h1>Articles</h1>
 			<ul>
-				{model.articles.list().map((e) => {
-					let tags = model.articles.tags.read(e.slug);
+				{model.posts.list("article").map((e) => {
+					let tags = model.tags.post(e.slug);
 					return (
 						<li>
 							<p class="p-kind">Article</p>
-							<p class="dt-published">{e.date}</p>
+							<p class="dt-published">{e.created}</p>
 							<a class="u-url" href={e.slug}>
 								{e.title}
 							</a>

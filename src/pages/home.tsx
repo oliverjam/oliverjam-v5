@@ -6,7 +6,7 @@ export function Home() {
 	return (
 		<Root title="Home" class="space-y-8 p-8 max-w-2xl">
 			<h1>Home</h1>
-			{model.all.list().map((e) => (
+			{model.posts.list().map((e) => (
 				<Entry {...e} />
 			))}
 		</Root>
