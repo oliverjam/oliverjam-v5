@@ -1,11 +1,11 @@
 {
 	"compilerOptions": {
-		"lib": ["ESNext"],
+		"lib": ["ESNext", "DOM"],
 		"target": "ESNext",
 		"module": "ESNext",
 		"moduleDetection": "force",
 		"jsx": "react-jsx",
-		"jsxImportSource": "htmljsx",
+		"jsxImportSource": "@oliverjam/hypa",
 
 		/* Bundler mode */
 		"moduleResolution": "bundler",
