@@ -1,5 +1,5 @@
-import { App } from "./app.tsx";
+import { app } from "./app.tsx";
 
-let server = Bun.serve({ fetch: App, port: 8080 });
+let server = Bun.serve({ fetch: app.fetch, port: 8080 });
 
 console.log(`Running → http://localhost:${server.port}`);

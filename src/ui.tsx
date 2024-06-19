@@ -1,3 +1,4 @@
+import type { JSX } from "@oliverjam/hypa/jsx-runtime";
 import type { Post, Article, Tags } from "./db.ts";
 import { heroicons } from "./icon.tsx";
 
@@ -211,6 +212,18 @@ export function ReadableDate({ children, class: className }: DateProps) {
 type RowProps = { class?: string; children: unknown };
 export function Row({ class: className, ...rest }: RowProps) {
 	return <div {...rest} class={cn("flex items-center gap-1", className)} />;
+}
+
+type HttpStatusProps = JSX.Props<{ status: number }>;
+export function HttpStatus({ status, children }: HttpStatusProps) {
+	return (
+		<header class="min-h-screen grid place-content-center place-items-center font-mono">
+			<p class="text-9xl font-black bg-gradient-to-t from-teal-700 via-green-400 bg-clip-text text-transparent">
+				{status}
+			</p>
+			<h1>{children}</h1>
+		</header>
+	);
 }
 
 export let cn = (...args: Array<string | undefined | false>): string =>
