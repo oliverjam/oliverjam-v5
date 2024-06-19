@@ -1,7 +1,7 @@
 import { Res, errors, HttpError } from "./http.ts";
 import { Root, Page } from "./root.tsx";
 import { model, type Article as ArticleType, parse_article } from "./db.ts";
-import { Entry, Article } from "./ui.tsx";
+import { Entry, Article, Filters } from "./ui.tsx";
 
 export async function App(req: Request): Promise<Response> {
 	try {
@@ -37,16 +37,22 @@ async function router(req: Request, url: URL): Promise<string | Response> {
 		}
 
 		if (p === "/") {
-			let type = url.searchParams.get("type");
+			let tags = url.searchParams.getAll("tags");
+			let type = url.searchParams.get("type") || null;
 			invariant(type === "article" || type === "note" || type === null);
+
+			let posts = model.posts.list(type, tags).map((e) => <Entry {...e} />);
+			if (boosted(req)) return posts.join("");
 			return (
 				<Root title="Home">
-					<Page>
-						<h1>Home</h1>
-						{model.posts.list(type).map((e) => (
-							<Entry {...e} />
-						))}
-					</Page>
+					<div class="grid grid-cols-[20rem_1fr]">
+						<aside class="p-8">
+							<Filters type={type} tags={tags} all_tags={model.tags.list()} />
+						</aside>
+						<section id="posts" class="space-y-4 max-w-3xl p-8">
+							{posts}
+						</section>
+					</div>
 				</Root>
 			);
 		}
@@ -133,4 +139,8 @@ async function router(req: Request, url: URL): Promise<string | Response> {
 
 export function invariant(cond: unknown, msg?: string): asserts cond {
 	if (!cond) throw new Error(msg);
+}
+
+function boosted(req: Request) {
+	return req.headers.get("sec-fetch-dest") === "empty";
 }

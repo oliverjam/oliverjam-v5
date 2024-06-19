@@ -1,22 +1,4 @@
-type Props = { size?: number; name: Name };
-
-export function Icon({ size = 16, name, ...rest }: Props) {
-	return (
-		<svg
-			fill="currentcolor"
-			{...rest}
-			width={size}
-			height={size}
-			aria-hidden="true"
-		>
-			{icons[name]}
-		</svg>
-	);
-}
-
-type Name = keyof typeof icons;
-
-let icons = {
+export let heroicons = {
 	"bars-3-bottom-right": (
 		<>
 			<path

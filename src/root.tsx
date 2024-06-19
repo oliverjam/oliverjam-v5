@@ -16,6 +16,7 @@ export function Root({ title, class: className = "", children }: Props) {
 				<link href={fonts} rel="stylesheet" />
 				<link rel="stylesheet" href="/public/app.css" />
 				<meta name="color-scheme" content="light dark" />
+				<script type="module" src="/public/transclusion.js"></script>
 			</head>
 			<body>
 				<a

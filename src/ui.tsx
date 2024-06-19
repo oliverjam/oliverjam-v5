@@ -1,5 +1,5 @@
 import type { Post, Article, Tags } from "./db.ts";
-import { Icon } from "./icon.tsx";
+import { heroicons } from "./icon.tsx";
 
 type DateProps = { children: string; class: string };
 
@@ -71,10 +71,123 @@ export function Article({
 	);
 }
 
+type FiltersProps = {
+	type: "article" | "note" | null;
+	tags: Array<string>;
+	all_tags: Array<{ tag: string; count: number }>;
+};
+
+export function Filters({ type, tags, all_tags }: FiltersProps) {
+	let popular_tags = all_tags.slice(0, 8);
+	let rest_tags = all_tags.slice(8);
+	return (
+		<form
+			data-boost
+			data-target="#posts"
+			data-history="replace"
+			oninput="this.requestSubmit()"
+			class="text-sm space-y-4"
+		>
+			<div role="radiogroup" aria-label="Type" class="flex gap-3">
+				<label class="inline-flex items-center gap-1 group has-[:checked]:text-[AccentColor]">
+					<input
+						class="sr-only"
+						type="radio"
+						name="type"
+						value=""
+						checked={type === null}
+					/>
+					<Icon
+						class="transition-opacity opacity-70 group-hover:opacity-100"
+						name="folder-open"
+					/>
+					All
+				</label>
+				<label class="inline-flex items-center gap-1 group has-[:checked]:text-[AccentColor]">
+					<input
+						class="sr-only"
+						type="radio"
+						name="type"
+						value="article"
+						checked={type === "article"}
+					/>
+					<Icon
+						class="transition-opacity opacity-70 group-hover:opacity-100"
+						name={icons.article}
+					/>
+					Articles
+				</label>
+				<label class="inline-flex items-center gap-1 group has-[:checked]:text-[AccentColor]">
+					<input
+						class="sr-only"
+						type="radio"
+						name="type"
+						value="note"
+						checked={type === "note"}
+					/>
+					<Icon
+						class="transition-opacity opacity-70 group-hover:opacity-100"
+						name={icons.note}
+					/>
+					Notes
+				</label>
+			</div>
+			<div role="group" aria-label="Tags" class="flex flex-wrap gap-3">
+				{popular_tags.map((t) => (
+					<Tag value={t.tag} checked={tags.includes(t.tag)}>
+						#{t.tag} <small>({t.count})</small>
+					</Tag>
+				))}
+			</div>
+			<details>
+				<summary>More tags</summary>
+				<div role="group" aria-label="More tags" class="flex flex-wrap gap-3">
+					{rest_tags.map((t) => (
+						<Tag value={t.tag} checked={tags.includes(t.tag)}>
+							#{t.tag} <small>({t.count})</small>
+						</Tag>
+					))}
+				</div>
+			</details>
+			<button class="[@media(scripting:enabled)]:hidden">Filter</button>
+		</form>
+	);
+}
+
+type TagProps = { children: Array<string>; value: string; checked: boolean };
+function Tag({ children, ...rest }: TagProps) {
+	return (
+		<label class="inline-flex gap-1 items-center">
+			<input type="checkbox" name="tags" {...rest} />
+			{children}
+		</label>
+	);
+}
+
 let icons = {
 	article: "document-text",
 	note: "chat-bubble-oval-left-ellipsis",
 } as const;
+
+type IconProps = {
+	size?: number;
+	name: keyof typeof heroicons;
+	class?: string;
+};
+
+export function Icon({ size = 16, name, ...rest }: IconProps) {
+	return (
+		<svg
+			fill="currentcolor"
+			{...rest}
+			width={size}
+			height={size}
+			aria-hidden="true"
+		>
+			{heroicons[name]}
+		</svg>
+	);
+}
 
 export function ReadableDate({ children, class: className }: DateProps) {
 	let d = new Date(children);

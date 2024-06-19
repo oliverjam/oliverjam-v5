@@ -5,9 +5,11 @@ import { invariant } from "./app.tsx";
 let db = new Database("./data/blog.db");
 
 function sql<Return, Bind extends SQLQueryBindings | SQLQueryBindings[] = []>(
-	strings: TemplateStringsArray
+	strings: TemplateStringsArray,
+	...params: Array<unknown>
 ) {
-	return db.query<Return, Bind>(strings.join(""));
+	let query = String.raw(strings, ...params);
+	return db.query<Return, Bind>(query);
 }
 
 let schema = /*sql*/ `
@@ -48,7 +50,7 @@ export type Article = {
 	content: string;
 };
 
-export type ArticleIn = Omit<Article, "created">;
+export type ArticleIn = Omit<Article, "created"> & { created: string | null };
 
 export type Note = {
 	type: "note";
@@ -80,12 +82,14 @@ export function parse_article(body: FormData): [ArticleIn, Array<string>] {
 	let draft = body.has("draft");
 	let time = body.get("time");
 	let content = body.get("content");
+	let created = body.get("created");
 	let tags = body.getAll("tags");
 	invariant(typeof slug === "string", `Missing slug`);
 	invariant(typeof title === "string", `Missing title`);
 	invariant(typeof intro === "string", `Missing intro`);
 	invariant(typeof time === "string", `Missing time`);
 	invariant(typeof content === "string", `Missing content`);
+	invariant(typeof created === "string" || created === null, `Missing created`);
 	return [
 		{
 			slug,
@@ -95,6 +99,7 @@ export function parse_article(body: FormData): [ArticleIn, Array<string>] {
 			draft: draft ? 1 : 0,
 			time: Number(time),
 			content,
+			created,
 		},
 		tags.map(String),
 	];
@@ -102,12 +107,23 @@ export function parse_article(body: FormData): [ArticleIn, Array<string>] {
 
 export let model = {
 	posts: {
-		list<T extends Post["type"]>(type?: T | null) {
-			return sql<PostType<T>, [T | null]>`
-				select * from posts
-				where draft = 0 and type = coalesce(?, type)
-				order by created desc
-			`.all(type || null);
+		list<T extends Post["type"]>(type: T | null, tags: Array<string>) {
+			if (tags.length) {
+				let in_tags = [];
+				for (let t of tags) in_tags.push(`'${t}'`);
+				return sql<PostType<T>, [T | null]>`
+					select * from posts join posts_tags on slug = post
+					where draft = 0 and type = coalesce(?, type) and tag in (${in_tags.join(",")})
+					group by slug having count(*) = ${in_tags.length}
+					order by created desc
+				`.all(type || null);
+			} else {
+				return sql<PostType<T>, [T | null]>`
+					select * from posts
+					where draft = 0 and type = coalesce(?, type)
+					order by created desc
+				`.all(type || null);
+			}
 		},
 		read<T extends Post>(slug: string) {
 			return sql<T, string>`
@@ -120,8 +136,8 @@ export let model = {
 				const $draft = post.draft ? 1 : 0;
 				if (post.type === "article") {
 					sql<void, Insert<ArticleIn>>`
-					insert into posts (slug, type, draft, content, title, time, intro)
-					values ($slug, $type, $draft, $content, $title, $time, $intro)
+					insert into posts (slug, type, draft, content, title, time, intro, created)
+					values ($slug, $type, $draft, $content, $title, $time, $intro, coalesce($created, current_timestamp))
 				`.run({
 						$slug,
 						$draft,
@@ -130,6 +146,7 @@ export let model = {
 						$title: post.title,
 						$time: post.time,
 						$intro: post.intro,
+						$created: post.created,
 					});
 				}
 				if (post.type === "note") {
@@ -146,10 +163,10 @@ export let model = {
 		list() {
 			return sql<{ tag: string; count: number }>`
 				select tag, count(tag) as count from posts_tags group by tag
+				order by count desc
 			`.all();
 		},
 		posts(tag: string) {
-			console.log({ tag });
 			return sql<Post, string>`
 				select posts.* from posts_tags join posts on post = slug where tag = ?
 			`.all(tag);
