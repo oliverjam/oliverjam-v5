@@ -31,7 +31,7 @@ export function Entry(props: Post) {
 	);
 }
 
-export function Article({
+export function ArticleEntry({
 	title,
 	created,
 	time,

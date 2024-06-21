@@ -1,14 +1,11 @@
 import { router } from "@oliverjam/hypa";
 import { Root, Page } from "./root.tsx";
-import { model, type Article as ArticleType, parse_article } from "./db.ts";
-import { Entry, Article, Filters, HttpStatus } from "./ui.tsx";
+import { model, type Article, parse_article } from "./db.ts";
+import { Entry, ArticleEntry, Filters, HttpStatus } from "./ui.tsx";
 
 export let app = router();
 
-app.route("*").get((c) => {
-	let time = new Date().toLocaleTimeString("en-GB");
-	console.log(`${time} ${c.req.method} ${c.url}`);
-});
+app.route("*").get((c) => console.log(`${time()} ${c.req.method} ${c.url}`));
 
 app.route("/public/*").get(async (c) => {
 	let file = Bun.file("." + c.url.pathname);
@@ -24,8 +21,9 @@ app.route("/").get((c) => {
 	let type = c.url.searchParams.get("type") || null;
 	invariant(type === "article" || type === "note" || type === null);
 
-	let posts = model.posts.list(type, tags).map((e) => <Entry {...e} />);
-	if (boosted(c.req)) return posts.join("");
+	let posts = "";
+	for (let e of model.posts.list(type, tags)) posts += <Entry {...e} />;
+	if (boosted(c.req)) return posts;
 	return (
 		<Root title="Home">
 			<div class="grid grid-cols-[20rem_1fr]">
@@ -41,34 +39,29 @@ app.route("/").get((c) => {
 });
 
 app.route("/notes/:slug").get((c) => {
-	if (c.params.slug) {
-		let e = model.posts.read(c.params.slug);
-		if (e) {
-			return (
-				<Root title={e.content.slice(0, 60) + "⋯"}>
-					<Page>
-						<Entry {...e} />
-					</Page>
-				</Root>
-			);
-		}
+	let e = model.posts.read(c.params.slug!);
+	if (e) {
+		return (
+			<Root title={e.content.slice(0, 60) + "⋯"}>
+				<Page>
+					<Entry {...e} />
+				</Page>
+			</Root>
+		);
 	}
 });
 
 app.route("/articles/:slug").get((c) => {
-	let slug = c.params.slug;
-	if (slug) {
-		let e = model.posts.read<ArticleType>(slug);
-		if (e) {
-			let tags = model.tags.post(slug);
-			return (
-				<Root title={e.title} class="max-w-3xl py-12 px-6 md:p-12">
-					<Page>
-						<Article {...e} tags={tags} />
-					</Page>
-				</Root>
-			);
-		}
+	let e = model.posts.read<Article>(c.params.slug!);
+	if (e) {
+		let tags = model.tags.post(c.params.slug!);
+		return (
+			<Root title={e.title} class="max-w-3xl py-12 px-6 md:p-12">
+				<Page>
+					<ArticleEntry {...e} tags={tags} />
+				</Page>
+			</Root>
+		);
 	}
 });
 
@@ -85,43 +78,34 @@ app.route("/articles").post(async (c) => {
 	}
 });
 
-app.route("/tags").get(() => {
-	let tags = model.tags.list();
-	return (
-		<Root title="Tags">
-			<Page>
-				<h1>Tags</h1>
-				<ul class="list-none p-0 space-y-4">
-					{tags.map((t) => {
-						return (
-							<li>
-								<a href={"/tags/" + t.tag.replace(/\W/g, "-")}>#{t.tag}</a>
-								<p>{t.count} posts</p>
-							</li>
-						);
-					})}
-				</ul>
-			</Page>
-		</Root>
-	);
-});
+app.route("/tags").get(() => (
+	<Root title="Tags">
+		<Page>
+			<h1>Tags</h1>
+			<ul class="list-none p-0 space-y-4">
+				{model.tags.list().map((t) => {
+					return (
+						<li>
+							<a href={"/tags/" + t.tag.replace(/\W/g, "-")}>#{t.tag}</a>
+							<p>{t.count} posts</p>
+						</li>
+					);
+				})}
+			</ul>
+		</Page>
+	</Root>
+));
 
-app.route("/tags/:slug").get((c) => {
-	let tag = c.params.tag;
-	if (tag) {
-		let posts = model.tags.posts(tag);
-		return (
-			<Root title={"#" + tag}>
-				<Page>
-					<h1>#{tag}</h1>
-					{posts.map((p) => (
-						<Entry {...p} />
-					))}
-				</Page>
-			</Root>
-		);
-	}
-});
+app.route("/tags/:slug").get((c) => (
+	<Root title={"#" + c.params.tag!}>
+		<Page>
+			<h1>#{c.params.tag!}</h1>
+			{model.tags.posts(c.params.tag!).map((p) => (
+				<Entry {...p} />
+			))}
+		</Page>
+	</Root>
+));
 
 app.route("*").get((c) =>
 	c.status(404).html(
@@ -137,4 +121,8 @@ export function invariant(cond: unknown, msg?: string): asserts cond {
 
 function boosted(req: Request) {
 	return req.headers.get("sec-fetch-dest") === "empty";
+}
+
+function time() {
+	return new Date().toLocaleTimeString("en-GB");
 }
