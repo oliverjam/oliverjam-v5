@@ -226,5 +226,10 @@ export function HttpStatus({ status, children }: HttpStatusProps) {
 	);
 }
 
-export let cn = (...args: Array<string | undefined | false>): string =>
-	args.reduce<string>((c, x) => (!!x ? c + " " + x : c), "");
+export function cn(...args: Array<string | undefined | null | false>): string {
+	let classname = "";
+	for (let c of args) {
+		if (c != null && c !== false) classname += " " + c;
+	}
+	return classname;
+}
