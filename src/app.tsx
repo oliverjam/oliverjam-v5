@@ -30,7 +30,7 @@ app.route("/").get((c) => {
 				<aside class="p-8">
 					<Filters type={type} tags={tags} all_tags={model.tags.list()} />
 				</aside>
-				<section id="posts" class="space-y-4 max-w-3xl p-8">
+				<section id="posts" class="space-y-8 max-w-3xl p-8">
 					{posts}
 				</section>
 			</div>

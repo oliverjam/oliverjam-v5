@@ -87,7 +87,7 @@ export function Filters({ type, tags, all_tags }: FiltersProps) {
 			data-target="#posts"
 			data-history="replace"
 			oninput="this.requestSubmit()"
-			class="text-sm space-y-4"
+			class="text-sm space-y-4 sticky top-8"
 		>
 			<div role="radiogroup" aria-label="Type" class="flex gap-3">
 				<label class="inline-flex items-center gap-1 group has-[:checked]:text-[AccentColor]">
