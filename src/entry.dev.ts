@@ -1,8 +1,10 @@
 import { app } from "./app.tsx";
 
-// @ts-ignore
-let css = await Bun.$`bun run css`.quiet();
-if (css.exitCode !== 0) console.error(css.stderr.toString());
+let css = await Bun.$`bun run css`.quiet().nothrow();
+if (css.exitCode !== 0) {
+	console.log(css.stderr.toString());
+	// process.exit(css.exitCode);
+}
 
 let server = Bun.serve(app);
 
