@@ -7,13 +7,14 @@ export let app = router();
 
 app.route("*").get((c) => console.log(`${time()} ${c.req.method} ${c.url}`));
 
+let headers =
+	Bun.env.NODE_ENV === "production"
+		? { "cache-control": `max-age=${60 * 60 * 24 * 365}, immutable` }
+		: undefined;
+
 app.route("/public/*").get(async (c) => {
 	let file = Bun.file("." + c.url.pathname);
-	if (await file.exists()) {
-		return new Response(file, {
-			headers: { "cache-control": `max-age=${60 * 60 * 24 * 365}, immutable` },
-		});
-	}
+	if (await file.exists()) return new Response(file, { headers });
 });
 
 app.route("/").get((c) => {
