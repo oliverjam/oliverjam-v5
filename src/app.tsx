@@ -2,6 +2,7 @@ import { router } from "@oliverjam/hypa";
 import { Root, Page } from "./root.tsx";
 import { model, type Article, parse_article } from "./db.ts";
 import { Entry, ArticleEntry, Filters, HttpStatus } from "./ui.tsx";
+import "./app.css"; // just for hot-reloading
 
 export let app = router();
 
