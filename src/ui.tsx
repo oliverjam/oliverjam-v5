@@ -6,17 +6,17 @@ type DateProps = { children: string; class: string };
 
 export function Entry(props: Post) {
 	let summary = props.type === "article" ? props.intro : props.content;
+	let date = <ReadableDate class="dt-published">{props.created}</ReadableDate>;
 	return (
 		<article class="h-entry space-y-1">
-			<header class="text-sm flex items-center gap-1 font-mono">
-				<Icon name={icons[props.type]} />
+			<header class="text-sm flex items-center gap-1">
 				<span class="p-kind sr-only">{props.type}</span>
 				{props.type === "note" ? (
 					<a class="u-url" href={props.slug}>
-						<ReadableDate class="dt-published">{props.created}</ReadableDate>
+						{date}
 					</a>
 				) : (
-					<ReadableDate class="dt-published">{props.created}</ReadableDate>
+					date
 				)}
 			</header>
 			{props.type === "article" && (
@@ -40,9 +40,9 @@ export function ArticleEntry({
 	tags,
 }: Article & { tags: Tags }) {
 	return (
-		<>
+		<div class="space-y-6">
 			<header class="space-y-3 text-sm">
-				<Row class="gap-4 font-mono">
+				<Row class="gap-4">
 					<Row>
 						<Icon name="document-text" />
 						<span class="p-kind sr-only">Article</span>
@@ -53,10 +53,10 @@ export function ArticleEntry({
 						<span>{(time / 60).toFixed(1)} minute read</span>
 					</Row>
 				</Row>
-				<h1 class="p-name leading-none text-3xl md:text-4xl font-display text-balance">
+				<h1 class="p-name leading-none text-3xl md:text-4xl text-balance">
 					{title}
 				</h1>
-				<Row class="font-mono">
+				<Row>
 					{tags.map((t) => (
 						<a class="p-category" href={`/tags/${t.slug}`}>
 							#{t.slug}
@@ -64,11 +64,11 @@ export function ArticleEntry({
 					))}
 				</Row>
 			</header>
-			<div class="mt-6 leading-relaxed font-serif Content">
-				<p class="text-lg md:text-xl font-display">{intro}</p>
-				{content}
-			</div>
-		</>
+			<hr />
+			<p class="text-lg md:text-xl uppercase">{intro}</p>
+			<hr />
+			<div class="mt-6 leading-relaxed Content">{content}</div>
+		</div>
 	);
 }
 
@@ -217,7 +217,7 @@ export function Row({ class: className, ...rest }: RowProps) {
 type HttpStatusProps = JSX.Props<{ status: number }>;
 export function HttpStatus({ status, children }: HttpStatusProps) {
 	return (
-		<header class="min-h-screen grid place-content-center place-items-center font-mono">
+		<header class="min-h-screen grid place-content-center place-items-center">
 			<p class="text-9xl font-black bg-gradient-to-t from-teal-700 via-green-400 bg-clip-text text-transparent">
 				{status}
 			</p>
