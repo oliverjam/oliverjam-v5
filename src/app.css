@@ -17,6 +17,7 @@
 	--color-paper-950: hsl(32deg 32% 8%);
 	--color-fern: hsl(110deg 15% 65%);
 	--font-family-sans: system-ui, sans-serif;
+	--font-family-serif: ui-serif, "Georgia", serif;
 	--font-family-mono: "DepartureMono", ui-monospace, monospace;
 }
 
@@ -51,10 +52,12 @@
 	:is(h2, h3, h4, h5, h6) {
 		font-weight: bold;
 		text-transform: uppercase;
+		font-family: var(--font-family-mono);
 	}
 
 	hr {
-		border: 1px solid inherit;
+		color: inherit;
+		border: 1px solid;
 	}
 
 	.Content {

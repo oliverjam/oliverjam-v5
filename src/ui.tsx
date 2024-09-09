@@ -67,7 +67,7 @@ export function ArticleEntry({
 			<hr />
 			<p class="text-lg md:text-xl uppercase">{intro}</p>
 			<hr />
-			<div class="mt-6 leading-relaxed Content">{content}</div>
+			<div class="mt-6 leading-relaxed Content font-serif">{content}</div>
 		</div>
 	);
 }
