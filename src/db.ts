@@ -1,18 +1,11 @@
 import { Database } from "bun:sqlite";
-import type { SQLQueryBindings } from "bun:sqlite";
-import { invariant } from "./app.tsx";
+import type { Article, Note, Post, PostType, Tag } from "./types.ts";
 
-let db = new Database("./data/blog.db");
+let db = new Database("./data/blog.db", { strict: true });
 
-function sql<Return, Bind extends SQLQueryBindings | SQLQueryBindings[] = []>(
-	strings: TemplateStringsArray,
-	...params: Array<unknown>
-) {
-	let query = String.raw(strings, ...params);
-	return db.query<Return, Bind>(query);
-}
+let sql = String.raw;
 
-let schema = /*sql*/ `
+let schema = sql`
 	create table if not exists posts (
 		type text not null check(type in ('article', 'post')),
 		slug text primary key not null,
@@ -37,150 +30,91 @@ let schema = /*sql*/ `
 
 db.run(schema);
 
-export type Post = Article | Note;
+type In<T> = Omit<T, "created"> & { created: string | null };
 
-export type Article = {
-	type: "article";
-	slug: string;
-	created: string;
-	draft: 0 | 1;
-	title: string;
-	time: number;
-	intro: string;
-	content: string;
-};
-
-export type ArticleIn = Omit<Article, "created"> & { created: string | null };
-
-export type Note = {
-	type: "note";
-	slug: string;
-	created: string;
-	draft: 0 | 1;
-	content: string;
-};
-
-type NoteIn = Omit<Note, "created">;
-
-type Tag = { slug: string };
-export type Tags = Array<Tag>;
-
-type Insert<T> = {
-	[K in keyof T as `$${string & K}`]: T[K];
-};
-
-type PostType<T extends Post["type"]> = T extends "article"
+type WhatPost<T extends PostType> = T extends "article"
 	? Article
 	: T extends "note"
 	? Note
 	: Post;
 
-export function parse_article(body: FormData): [ArticleIn, Array<string>] {
-	let slug = body.get("slug");
-	let title = body.get("title");
-	let intro = body.get("intro");
-	let draft = body.has("draft");
-	let time = body.get("time");
-	let content = body.get("content");
-	let created = body.get("created");
-	let tags = body.getAll("tags");
-	invariant(typeof slug === "string", `Missing slug`);
-	invariant(typeof title === "string", `Missing title`);
-	invariant(typeof intro === "string", `Missing intro`);
-	invariant(typeof time === "string", `Missing time`);
-	invariant(typeof content === "string", `Missing content`);
-	invariant(typeof created === "string" || created === null, `Missing created`);
-	return [
-		{
-			slug,
-			type: "article",
-			title,
-			intro,
-			draft: draft ? 1 : 0,
-			time: Number(time),
-			content,
-			created,
-		},
-		tags.map(String),
-	];
-}
-
-export let model = {
-	posts: {
-		list<T extends Post["type"]>(type: T | null, tags: Array<string>) {
-			if (tags.length) {
-				let in_tags = [];
-				for (let t of tags) in_tags.push(`'${t}'`);
-				return sql<PostType<T>, [T | null]>`
-					select * from posts join posts_tags on slug = post
-					where draft = 0 and type = coalesce(?, type) and tag in (${in_tags.join(",")})
-					group by slug having count(*) = ${in_tags.length}
-					order by created desc
-				`.all(type || null);
-			} else {
-				return sql<PostType<T>, [T | null]>`
-					select * from posts
-					where draft = 0 and type = coalesce(?, type)
-					order by created desc
-				`.all(type || null);
-			}
-		},
-		read<T extends Post>(slug: string) {
-			return sql<T, string>`
-				select * from posts where slug = ?
-			`.get(slug);
-		},
-		create(post: ArticleIn | NoteIn, tags: Array<string>) {
-			db.transaction(() => {
-				let $slug = post.slug.replace(/\W/g, "-");
-				const $draft = post.draft ? 1 : 0;
-				if (post.type === "article") {
-					sql<void, Insert<ArticleIn>>`
+export let posts = {
+	list<T extends PostType>(type: T | null, filters: Array<string>) {
+		let query = "";
+		if (filters.length) {
+			let tags = [];
+			for (let t of filters) tags.push(`'${t}'`);
+			query = sql`
+				select * from posts join posts_tags on slug = post
+				where draft = 0 and type = coalesce(?, type) and tag in (${tags.join(",")})
+				group by slug having count(*) = ${tags.length}
+				order by created desc
+			`;
+		} else {
+			query = sql`
+				select * from posts
+				where draft = 0 and type = coalesce(?, type)
+				order by created desc
+			`;
+		}
+		return db.query<WhatPost<T>, [T | null]>(query).all(type);
+	},
+	read<T extends PostType>(slug: string) {
+		let query = sql`select * from posts where slug = ?`;
+		return db.query<WhatPost<T>, string>(query).get(slug);
+	},
+	create(post: In<Article> | In<Note>, post_tags: Array<string>) {
+		db.transaction(() => {
+			let slug = post.slug.replace(/\W/g, "-");
+			if (post.type === "article") {
+				let query = sql`
 					insert into posts (slug, type, draft, content, title, time, intro, created)
 					values ($slug, $type, $draft, $content, $title, $time, $intro, coalesce($created, current_timestamp))
-				`.run({
-						$slug,
-						$draft,
-						$type: post.type,
-						$content: post.content,
-						$title: post.title,
-						$time: post.time,
-						$intro: post.intro,
-						$created: post.created,
-					});
-				}
-				if (post.type === "note") {
-					sql<void, Insert<NoteIn>>`
+				`;
+				db.query<void, In<Article>>(query).run({ ...post, slug });
+			}
+			if (post.type === "note") {
+				let query = sql`
 						insert into posts (slug, type, draft, content)
 						values ($slug, $type, $draft, $content)
-					`.run({ $slug, $type: post.type, $draft, $content: post.content });
-				}
-				for (let tag of tags) model.tags.create(tag, $slug);
-			})();
-		},
+					`;
+				db.query<void, In<Note>>(query).run({
+					slug,
+					created: post.created,
+					draft: post.draft,
+					type: post.type,
+					content: post.content,
+				});
+			}
+			for (let tag of post_tags) tags.create(tag, slug);
+		})();
 	},
-	tags: {
-		list() {
-			return sql<{ tag: string; count: number }>`
-				select tag, count(tag) as count from posts_tags group by tag
-				order by count desc
-			`.all();
-		},
-		posts(tag: string) {
-			return sql<Post, string>`
-				select posts.* from posts_tags join posts on post = slug where tag = ?
-			`.all(tag);
-		},
-		post(post_slug: string) {
-			return sql<Tag, string>`
-				select tag as slug from posts_tags where post = ?
-			`.all(post_slug);
-		},
-		create(tag: string, slug: string) {
-			sql<void, typeof tag>`insert into tags values (?)`.run(tag);
-			sql<void, [typeof tag, typeof slug]>`
-				insert into posts_tags (tag, post) values (?, ?)
-			`.run(tag, slug);
-		},
+};
+
+export let tags = {
+	list() {
+		let q = sql`
+			select tag, count(tag) as count from posts_tags group by tag
+			order by count desc
+		`;
+		return db.query<{ tag: string; count: number }, []>(q).all();
+	},
+	posts(tag: string) {
+		let q = sql`
+			select posts.* from posts_tags join posts
+			on post = slug
+			where tag = ?
+		`;
+		return db.query<Post, string>(q).all(tag);
+	},
+	post(post_slug: string) {
+		let q = sql`select tag as slug from posts_tags where post = ?`;
+		return db.query<Tag, string>(q).all(post_slug);
+	},
+	create(tag: string, slug: string) {
+		let insert_tag = sql`insert into tags values (?)`;
+		let link_tag = sql`insert into posts_tags (tag, post) values (?, ?)`;
+		db.query(insert_tag).run(tag);
+		db.query(link_tag).run(tag, slug);
 	},
 };

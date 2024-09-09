@@ -1,6 +1,6 @@
 import { router } from "@oliverjam/hypa";
 import { Root, Page } from "./root.tsx";
-import { model, type Article, parse_article } from "./db.ts";
+import * as model from "./db.ts";
 import { Entry, ArticleEntry, Filters, HttpStatus } from "./ui.tsx";
 import "./app.css"; // just for hot-reloading
 
@@ -21,7 +21,7 @@ app.route("/public/*").get(async (c) => {
 app.route("/").get((c) => {
 	let tags = c.url.searchParams.getAll("tags");
 	let type = c.url.searchParams.get("type") || null;
-	invariant(type === "article" || type === "note" || type === null);
+	check(type === "article" || type === "note" || type === null);
 
 	let posts = "";
 	for (let e of model.posts.list(type, tags)) posts += <Entry {...e} />;
@@ -41,7 +41,7 @@ app.route("/").get((c) => {
 });
 
 app.route("/notes/:slug").get((c) => {
-	let e = model.posts.read(c.params.slug!);
+	let e = model.posts.read<"note">(c.params.slug!);
 	if (e) {
 		return (
 			<Root title={e.content.slice(0, 60) + "⋯"}>
@@ -54,7 +54,7 @@ app.route("/notes/:slug").get((c) => {
 });
 
 app.route("/articles/:slug").get((c) => {
-	let e = model.posts.read<Article>(c.params.slug!);
+	let e = model.posts.read<"article">(c.params.slug!);
 	if (e) {
 		let tags = model.tags.post(c.params.slug!);
 		return (
@@ -70,8 +70,21 @@ app.route("/articles/:slug").get((c) => {
 app.route("/articles").post(async (c) => {
 	try {
 		let body = await c.req.formData();
-		let [post, tags] = parse_article(body);
-		model.posts.create(post, tags);
+		let keys = ["slug", "title", "intro", "draft", "time", "content"] as const;
+		let post = formdata(body, keys);
+		let tag_names = body.getAll("tags").map(String);
+		let created = body.get("created");
+		check(typeof created === "string" || created === null, "Missing created");
+		model.posts.create(
+			{
+				...post,
+				created,
+				type: "article",
+				draft: post.draft ? 1 : 0,
+				time: Number(post.time),
+			},
+			tag_names
+		);
 		return c.redirect(`/articles/${post.slug}`);
 	} catch (e) {
 		if (e instanceof Error) {
@@ -117,7 +130,7 @@ app.route("*").get((c) =>
 	)
 );
 
-export function invariant(cond: unknown, msg?: string): asserts cond {
+export function check(cond: unknown, msg?: string): asserts cond {
 	if (!cond) throw new Error(msg);
 }
 
@@ -127,4 +140,14 @@ function boosted(req: Request) {
 
 function time() {
 	return new Date().toLocaleTimeString("en-GB");
+}
+
+function formdata<K extends string>(data: FormData, keys: ReadonlyArray<K>) {
+	let obj = {} as Record<K, string>;
+	for (let key of keys) {
+		let value = data.get(key);
+		check(typeof value === "string", `Missing ${key}`);
+		obj[key] = value;
+	}
+	return obj;
 }

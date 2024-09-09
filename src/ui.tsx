@@ -1,5 +1,5 @@
 import type { JSX } from "@oliverjam/hypa/jsx-runtime";
-import type { Post, Article, Tags } from "./db.ts";
+import type { Post, Article, Tags, PostType } from "./types.ts";
 import { heroicons } from "./icon.tsx";
 
 type DateProps = { children: string; class: string };
@@ -73,7 +73,7 @@ export function ArticleEntry({
 }
 
 type FiltersProps = {
-	type: "article" | "note" | null;
+	type: PostType | null;
 	tags: Array<string>;
 	all_tags: Array<{ tag: string; count: number }>;
 };
