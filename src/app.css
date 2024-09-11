@@ -1,5 +1,4 @@
 @layer theme, base, components, utilities;
-/* @import "tailwindcss/preflight" layer(base); */
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/utilities" layer(utilities);
 
@@ -15,13 +14,27 @@
 	--color-paper-800: hsl(32deg 32% 28%);
 	--color-paper-900: hsl(32deg 32% 18%);
 	--color-paper-950: hsl(32deg 32% 8%);
+	--color-teal-975: hsl(178, 85%, 8%);
+	--color-teal-1000: hsl(178, 90%, 3%);
 	--color-fern: hsl(110deg 15% 65%);
+	--color-fg: var(--color-paper-950);
+	--color-bg: var(--color-paper-300);
+	--color-fg-dim: var(--color-paper-800);
+	--color-bg-dim: var(--color-paper-400);
 	--font-family-sans: system-ui, sans-serif;
 	--font-family-serif: ui-serif, "Georgia", serif;
 	--font-family-mono: "DepartureMono", ui-monospace, monospace;
 }
 
 @layer base {
+	@media (prefers-color-scheme: dark) {
+		html {
+			--color-fg: var(--color-neutral-300);
+			--color-bg: var(--color-teal-1000);
+			--color-fg-dim: var(--color-teal-700);
+			--color-bg-dim: var(--color-teal-975);
+		}
+	}
 	@font-face {
 		font-family: DepartureMono;
 		src: url("/public/DepartureMono-Regular.woff2") format(woff2);
@@ -35,8 +48,9 @@
 	a[class] {
 		text-decoration-line: none;
 		color: inherit;
-		text-decoration-thickness: 0.5px;
 		text-underline-offset: 3px;
+		text-decoration-style: double;
+		text-decoration-thickness: 1.5px;
 	}
 
 	a[class]:hover {
@@ -46,7 +60,16 @@
 
 @layer components {
 	html {
-		scrollbar-color: var(--color-paper-800) var(--color-paper-400);
+		font-family: var(--font-family-mono);
+		color: var(--color-fg);
+		background-color: var(--color-bg);
+		scrollbar-color: var(--color-fg-dim) var(--color-bg-dim);
+		scrollbar-gutter: stable;
+	}
+
+	:focus {
+		outline: 2px solid var(--color-fg);
+		outline-offset: 2px;
 	}
 
 	:is(h2, h3, h4, h5, h6) {
@@ -57,16 +80,51 @@
 
 	hr {
 		color: inherit;
-		border: 1px solid;
+		border: 0;
+		border-top: 5px double;
+	}
+
+	.Toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-1);
+		margin-inline: calc(var(--spacing-1) * -1);
+		padding-inline: var(--spacing-1);
+		> .Radio {
+			block-size: var(--spacing-2);
+			inline-size: var(--spacing-2);
+			border-radius: calc(infinity * 1px);
+			border: 1px solid currentcolor;
+		}
+		&:has(> :focus-visible) {
+			outline: 2px solid var(--color-fg);
+			outline-offset: 2px;
+		}
+		&:has(> :checked) {
+			color: var(--color-bg);
+			background-color: var(--color-fg);
+			> .Radio {
+				background-color: var(--color-bg);
+			}
+		}
+	}
+
+	details[class] {
+		> summary {
+			list-style: none;
+		}
+		> summary::-webkit-details-marker {
+			display: none;
+		}
 	}
 
 	.Content {
 		> * + * {
-			margin-block-start: var(--s, theme(space.5));
+			margin-block-start: var(--spacing-6);
 		}
 
 		> :is(h2, h3, h4, h5, h6) + * {
-			--s: theme(space.1);
+			margin-block-start: var(--spacing-1);
 		}
 
 		a {
@@ -77,12 +135,12 @@
 			padding: 1px 3px;
 			box-decoration-break: clone;
 			font-family: var(--font-family-mono);
-			color: var(--color-paper-900);
-			background-color: var(--color-paper-400);
+			font-size: var(--font-size-sm);
+			background-color: var(--color-bg-dim);
 		}
 
 		:is(ul, ol) {
-			padding-inline-start: 30px;
+			padding-inline-start: 1em;
 		}
 
 		li::marker {
@@ -90,14 +148,20 @@
 		}
 
 		pre {
-			font-size: theme(fontSize[sm]);
 			line-height: 1.4;
 			overflow: auto;
-			padding: theme(space.4);
-			border: 1px solid var(--color-paper-800);
-			background-color: var(--color-paper-400);
+			padding: var(--spacing-6);
+			margin-inline: calc(-1 * var(--spacing-6));
+			background-color: var(--color-bg-dim);
 			scrollbar-width: thin;
-			scrollbar-color: var(--color-paper-800) var(--color-paper-400);
+			scrollbar-color: inherit;
 		}
+	}
+}
+
+@layer utilities {
+	.invert-color {
+		color: var(--color-bg);
+		background-color: var(--color-fg);
 	}
 }

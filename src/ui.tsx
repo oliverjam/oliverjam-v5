@@ -2,6 +2,42 @@ import type { JSX } from "@oliverjam/hypa/jsx-runtime";
 import type { Post, Article, Tags, PostType } from "./types.ts";
 import { heroicons } from "./icon.tsx";
 
+type RootProps = {
+	title: string;
+	class?: string;
+	children: unknown | Array<unknown>;
+};
+
+export function Root({ title, class: className = "", children }: RootProps) {
+	return (
+		<html lang="en">
+			<head>
+				<title>{`${title} - oliverjam.es`}</title>
+				<link rel="icon" href="/public/favicon.svg" />
+				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+				<link rel="stylesheet" href="/public/app.css" />
+				<meta name="color-scheme" content="light dark" />
+				<script type="module" src="/public/transclusion.js"></script>
+			</head>
+			<body>
+				<a
+					class="absolute block top-2 left-2 p-2 invert-color [&:not(:focus)]:sr-only"
+					href="#main"
+				>
+					Skip to content
+				</a>
+				<main
+					id="main"
+					tabindex="-1"
+					class="max-w-3xl m-1 md:my-8 md:mx-auto md:border-2 md:p-1"
+				>
+					{children}
+				</main>
+			</body>
+		</html>
+	);
+}
+
 type DateProps = { children: string; class: string };
 
 export function Entry(props: Post) {
@@ -34,40 +70,29 @@ export function Entry(props: Post) {
 export function ArticleEntry({
 	title,
 	created,
-	time,
 	intro,
 	content,
 	tags,
 }: Article & { tags: Tags }) {
 	return (
-		<div class="space-y-6">
-			<header class="space-y-3 text-sm">
-				<Row class="gap-4">
-					<Row>
-						<Icon name="document-text" />
-						<span class="p-kind sr-only">Article</span>
-						<ReadableDate class="dt-published">{created}</ReadableDate>
-					</Row>
-					<Row>
-						<Icon name="clock" />
-						<span>{(time / 60).toFixed(1)} minute read</span>
-					</Row>
-				</Row>
+		<div class="space-y-1">
+			<header class="border-2 p-6 space-y-3">
+				<ReadableDate class="dt-published text-sm">{created}</ReadableDate>
 				<h1 class="p-name leading-none text-3xl md:text-4xl text-balance">
 					{title}
 				</h1>
-				<Row>
+				<div class="flex gap-1">
 					{tags.map((t) => (
-						<a class="p-category" href={`/tags/${t.slug}`}>
+						<a class="p-category text-sm" href={`/tags/${t.slug}`}>
 							#{t.slug}
 						</a>
 					))}
-				</Row>
+				</div>
 			</header>
-			<hr />
-			<p class="text-lg md:text-xl uppercase">{intro}</p>
-			<hr />
-			<div class="mt-6 leading-relaxed Content font-serif">{content}</div>
+			<p class="border-2 p-6 text-lg md:text-xl">{intro}</p>
+			<div class="border-2 p-6 leading-relaxed Content font-serif">
+				{content}
+			</div>
 		</div>
 	);
 }
@@ -79,96 +104,65 @@ type FiltersProps = {
 };
 
 export function Filters({ type, tags, all_tags }: FiltersProps) {
-	let popular_tags = all_tags.slice(0, 8);
-	let rest_tags = all_tags.slice(8);
+	let popular_tags = all_tags.slice(0, 7);
 	return (
 		<form
 			data-boost
 			data-target="#posts"
 			data-history="replace"
 			oninput="this.requestSubmit()"
-			class="text-sm space-y-4 sticky top-8"
+			class="space-y-4"
 		>
-			<div role="radiogroup" aria-label="Type" class="flex gap-3">
-				<label class="inline-flex items-center gap-1 group has-[:checked]:text-[AccentColor]">
-					<input
-						class="sr-only"
-						type="radio"
-						name="type"
-						value=""
-						checked={type === null}
-					/>
-					<Icon
-						class="transition-opacity opacity-70 group-hover:opacity-100"
-						name="folder-open"
-					/>
+			<div role="radiogroup" aria-label="Type" class="flex gap-4">
+				<Radio name="type" value="" checked={type === null}>
 					All
-				</label>
-				<label class="inline-flex items-center gap-1 group has-[:checked]:text-[AccentColor]">
-					<input
-						class="sr-only"
-						type="radio"
-						name="type"
-						value="article"
-						checked={type === "article"}
-					/>
-					<Icon
-						class="transition-opacity opacity-70 group-hover:opacity-100"
-						name={icons.article}
-					/>
+				</Radio>
+				<Radio name="type" value="article" checked={type === "article"}>
 					Articles
-				</label>
-				<label class="inline-flex items-center gap-1 group has-[:checked]:text-[AccentColor]">
-					<input
-						class="sr-only"
-						type="radio"
-						name="type"
-						value="note"
-						checked={type === "note"}
-					/>
-					<Icon
-						class="transition-opacity opacity-70 group-hover:opacity-100"
-						name={icons.note}
-					/>
+				</Radio>
+				<Radio name="type" value="note" checked={type === "note"}>
 					Notes
-				</label>
+				</Radio>
 			</div>
-			<div role="group" aria-label="Tags" class="flex flex-wrap gap-3">
+			<div
+				role="group"
+				aria-label="Tags"
+				class="mb-0 flex flex-wrap gap-x-3 gap-y-2"
+			>
 				{popular_tags.map((t) => (
 					<Tag value={t.tag} checked={tags.includes(t.tag)}>
-						#{t.tag} <small>({t.count})</small>
+						#{t.tag}
 					</Tag>
 				))}
+				<a href="/tags" class="">
+					All tags →
+				</a>
 			</div>
-			<details>
-				<summary>More tags</summary>
-				<div role="group" aria-label="More tags" class="flex flex-wrap gap-3">
-					{rest_tags.map((t) => (
-						<Tag value={t.tag} checked={tags.includes(t.tag)}>
-							#{t.tag} <small>({t.count})</small>
-						</Tag>
-					))}
-				</div>
-			</details>
 			<button class="[@media(scripting:enabled)]:hidden">Filter</button>
 		</form>
+	);
+}
+
+type RadioProps = JSX.Props & JSX.HtmlInputTag;
+function Radio({ children, ...rest }: RadioProps) {
+	return (
+		<label class="Toggle">
+			<input {...rest} class="sr-only" type="radio" />
+			<span class="Radio" aria-hidden="true" />
+			{children}
+		</label>
 	);
 }
 
 type TagProps = { children: Array<string>; value: string; checked: boolean };
 function Tag({ children, ...rest }: TagProps) {
 	return (
-		<label class="inline-flex gap-1 items-center">
-			<input type="checkbox" name="tags" {...rest} />
+		<label class="Toggle">
+			<input type="checkbox" name="tags" class="sr-only" {...rest} />
 			{children}
 		</label>
 	);
 }
-
-let icons = {
-	article: "document-text",
-	note: "chat-bubble-oval-left-ellipsis",
-} as const;
 
 type IconProps = {
 	size?: number;
@@ -209,7 +203,7 @@ export function ReadableDate({ children, class: className }: DateProps) {
 	);
 }
 
-type RowProps = { class?: string; children: unknown };
+type RowProps = JSX.Props<{ class?: string }>;
 export function Row({ class: className, ...rest }: RowProps) {
 	return <div {...rest} class={cn("flex items-center gap-1", className)} />;
 }

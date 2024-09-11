@@ -1,7 +1,6 @@
 import { router } from "@oliverjam/hypa";
-import { Root, Page } from "./root.tsx";
 import * as model from "./db.ts";
-import { Entry, ArticleEntry, Filters, HttpStatus } from "./ui.tsx";
+import { Root, Entry, ArticleEntry, Filters, HttpStatus } from "./ui.tsx";
 import "./app.css"; // just for hot-reloading
 
 export let app = router();
@@ -28,14 +27,12 @@ app.route("/").get((c) => {
 	if (boosted(c.req)) return posts;
 	return (
 		<Root title="Home">
-			<div class="grid grid-cols-[20rem_1fr]">
-				<aside class="p-8">
-					<Filters type={type} tags={tags} all_tags={model.tags.list()} />
-				</aside>
-				<section id="posts" class="space-y-8 max-w-3xl p-8">
-					{posts}
-				</section>
-			</div>
+			<section class="border-2 p-6">
+				<Filters type={type} tags={tags} all_tags={model.tags.list()} />
+			</section>
+			<section id="posts" class="space-y-8 mt-1 border-2 p-6">
+				{posts.length > 0 ? posts : <p>No posts found</p>}
+			</section>
 		</Root>
 	);
 });
@@ -45,9 +42,7 @@ app.route("/notes/:slug").get((c) => {
 	if (e) {
 		return (
 			<Root title={e.content.slice(0, 60) + "⋯"}>
-				<Page>
-					<Entry {...e} />
-				</Page>
+				<Entry {...e} />
 			</Root>
 		);
 	}
@@ -58,10 +53,8 @@ app.route("/articles/:slug").get((c) => {
 	if (e) {
 		let tags = model.tags.post(c.params.slug!);
 		return (
-			<Root title={e.title} class="max-w-3xl py-12 px-6 md:p-12">
-				<Page>
-					<ArticleEntry {...e} tags={tags} />
-				</Page>
+			<Root title={e.title}>
+				<ArticleEntry {...e} tags={tags} />
 			</Root>
 		);
 	}
@@ -95,30 +88,26 @@ app.route("/articles").post(async (c) => {
 
 app.route("/tags").get(() => (
 	<Root title="Tags">
-		<Page>
-			<h1>Tags</h1>
-			<ul class="list-none p-0 space-y-4">
-				{model.tags.list().map((t) => {
-					return (
-						<li>
-							<a href={"/tags/" + t.tag.replace(/\W/g, "-")}>#{t.tag}</a>
-							<p>{t.count} posts</p>
-						</li>
-					);
-				})}
-			</ul>
-		</Page>
+		<h1>Tags</h1>
+		<ul class="list-none p-0 space-y-4">
+			{model.tags.list().map((t) => {
+				return (
+					<li>
+						<a href={"/tags/" + t.tag.replace(/\W/g, "-")}>#{t.tag}</a>
+						<p>{t.count} posts</p>
+					</li>
+				);
+			})}
+		</ul>
 	</Root>
 ));
 
 app.route("/tags/:slug").get((c) => (
 	<Root title={"#" + c.params.tag!}>
-		<Page>
-			<h1>#{c.params.tag!}</h1>
-			{model.tags.posts(c.params.tag!).map((p) => (
-				<Entry {...p} />
-			))}
-		</Page>
+		<h1>#{c.params.tag!}</h1>
+		{model.tags.posts(c.params.tag!).map((p) => (
+			<Entry {...p} />
+		))}
 	</Root>
 ));
 
