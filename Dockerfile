@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1
 
-FROM oven/bun:1.1.15-slim as base
+FROM oven/bun:1.1.27-slim as base
 
 # LABEL fly_launch_runtime="Bun"
 WORKDIR /app
