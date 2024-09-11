@@ -1,6 +1,5 @@
 import type { JSX } from "@oliverjam/hypa/jsx-runtime";
 import type { Post, Article, Tags, PostType } from "./types.ts";
-import { heroicons } from "./icon.tsx";
 
 type RootProps = {
 	title: string;
@@ -161,26 +160,6 @@ function Tag({ children, ...rest }: TagProps) {
 			<input type="checkbox" name="tags" class="sr-only" {...rest} />
 			{children}
 		</label>
-	);
-}
-
-type IconProps = {
-	size?: number;
-	name: keyof typeof heroicons;
-	class?: string;
-};
-
-export function Icon({ size = 16, name, ...rest }: IconProps) {
-	return (
-		<svg
-			fill="currentcolor"
-			{...rest}
-			width={size}
-			height={size}
-			aria-hidden="true"
-		>
-			{heroicons[name]}
-		</svg>
 	);
 }
 
