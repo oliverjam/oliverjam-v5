@@ -131,14 +131,6 @@
 			color: inherit;
 		}
 
-		code {
-			padding: 1px 3px;
-			box-decoration-break: clone;
-			font-family: var(--font-family-mono);
-			font-size: var(--font-size-sm);
-			background-color: var(--color-bg-dim);
-		}
-
 		:is(ul, ol) {
 			padding-inline-start: 1em;
 		}
@@ -155,6 +147,14 @@
 			background-color: var(--color-bg-dim);
 			scrollbar-width: thin;
 			scrollbar-color: inherit;
+		}
+
+		:not(pre) > code {
+			padding: 1px 3px;
+			box-decoration-break: clone;
+			font-family: var(--font-family-mono);
+			font-size: var(--font-size-sm);
+			background-color: var(--color-bg-dim);
 		}
 	}
 }
