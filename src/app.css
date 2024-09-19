@@ -78,12 +78,6 @@
 		font-family: var(--font-family-mono);
 	}
 
-	hr {
-		color: inherit;
-		border: 0;
-		border-top: 5px double;
-	}
-
 	.Toggle {
 		display: inline-flex;
 		align-items: center;
