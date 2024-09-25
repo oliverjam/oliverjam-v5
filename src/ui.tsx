@@ -11,7 +11,7 @@ export function Root({ title, class: className = "", children }: RootProps) {
 	return (
 		<html lang="en">
 			<head>
-				<title>{`${title} - oliverjam.es`}</title>
+				<title>{`${title} - oliverjam`}</title>
 				<link rel="icon" href="/public/favicon.svg" />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 				<link rel="stylesheet" href="/public/app.css" />
