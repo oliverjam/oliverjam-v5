@@ -1,5 +1,5 @@
 import type { JSX } from "@oliverjam/hypa/jsx-runtime";
-import type { Post, Article, Tags, PostType } from "./types.ts";
+import type { Post, Article, Tags, PostType, PostTags } from "./types.ts";
 
 type RootProps = {
 	title: string;
@@ -99,7 +99,7 @@ export function ArticleEntry({
 type FiltersProps = {
 	type: PostType | null;
 	tags: Array<string>;
-	all_tags: Array<{ tag: string; count: number }>;
+	all_tags: PostTags;
 };
 
 export function Filters({ type, tags, all_tags }: FiltersProps) {
