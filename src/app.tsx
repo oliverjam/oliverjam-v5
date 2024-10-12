@@ -85,22 +85,16 @@ app.route("/articles").post(async (c) => {
 	try {
 		let data = new SafeFormData(await c.req.formData());
 		let slug = data.string("slug");
-		let title = data.string("title");
-		let intro = data.string("intro");
-		const draft = data.binary("draft");
-		let content = data.string("content");
-		let time = data.number("time");
 		let tags = data.strings("tags");
-		let created = data.nullable("created");
 		let article = {
 			type: "article",
 			slug,
-			title,
-			intro,
-			draft,
-			time,
-			content,
-			created,
+			title: data.string("title"),
+			intro: data.string("intro"),
+			draft: data.binary("draft"),
+			content: data.string("content"),
+			time: data.number("time"),
+			created: data.nullable("created"),
 		} satisfies In<Article>;
 		transaction(() => {
 			sql`
@@ -124,16 +118,13 @@ app.route("/notes").post(async (c) => {
 	try {
 		let data = new SafeFormData(await c.req.formData());
 		let slug = data.string("slug");
-		const draft = data.binary("draft");
-		let content = data.string("content");
 		let tags = data.strings("tags");
-		let created = data.nullable("created");
 		let note = {
 			type: "note",
 			slug,
-			draft,
-			content,
-			created,
+			draft: data.binary("draft"),
+			content: data.string("content"),
+			created: data.string("created"),
 		} satisfies In<Note>;
 		transaction(() => {
 			sql`
