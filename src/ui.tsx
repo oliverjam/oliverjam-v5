@@ -27,7 +27,6 @@ export function Root({ title, class: className = "", children }: RootProps) {
 				</a>
 				<main
 					id="main"
-					tabindex="-1"
 					class="max-w-3xl m-1 md:my-8 md:mx-auto md:border-2 md:p-1"
 				>
 					{children}
