@@ -11,9 +11,9 @@
 		"@oliverjam/hypa": "^1.3.0"
 	},
 	"devDependencies": {
-		"@types/bun": "latest",
-		"tailwindcss": "^4.0.0-alpha.20",
-		"@tailwindcss/cli": "^4.0.0-alpha.20"
+		"@types/bun": "^1.1.5",
+		"tailwindcss": "^4.1.5",
+		"@tailwindcss/cli": "^4.1.5"
 	},
 	"peerDependencies": {
 		"typescript": "^5.4.5"
