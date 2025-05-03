@@ -6,7 +6,9 @@ import "./app.css"; // just for hot-reloading
 
 export let app = router();
 
-app.route("*").get((c) => console.log(`${time()} ${c.req.method} ${c.url}`));
+app
+	.route("*")
+	.get((c) => console.log(`${time()} ${c.req.method} ${c.url.pathname}`));
 
 let headers =
 	Bun.env.NODE_ENV === "production"
