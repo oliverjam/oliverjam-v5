@@ -1,6 +1,4 @@
-import { app } from "./app.tsx";
-
-let server = Bun.serve({ fetch: app.fetch, port: 8080 });
+import { server } from "./app.tsx";
 
 if (Bun.env.NODE_ENV !== "production") {
   let css = await Bun.$`bun run css`.quiet().nothrow();

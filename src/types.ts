@@ -53,3 +53,5 @@ export type Tags = Array<Tag>;
 export type PostTag = { tag: string; count: number };
 
 export type PostTags = Array<PostTag>;
+
+export type N<T> = T | null;
